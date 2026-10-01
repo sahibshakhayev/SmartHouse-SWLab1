@@ -9,6 +9,7 @@ module hu.smarthouse.smarthouse {
     requires org.kordamp.ikonli.javafx;
     requires org.kordamp.bootstrapfx.core;
     requires eu.hansolo.tilesfx;
+    requires static lombok;
 
     opens hu.smarthouse.smarthouse to javafx.fxml;
     exports hu.smarthouse.smarthouse;
