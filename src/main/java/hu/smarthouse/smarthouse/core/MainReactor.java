@@ -6,11 +6,11 @@ import java.util.concurrent.BlockingQueue;
 
 public class MainReactor implements Runnable {
 
-    private final BlockingQueue<Event> eventPool;
-    private final BlockingQueue<Event> consequencePool;
+    private final EventPool eventPool;
+    private final ConsequencePool consequencePool;
     private volatile boolean isRunning = true;
 
-    public MainReactor(BlockingQueue<Event> eventPool, BlockingQueue<Event> consequencePool) {
+    public MainReactor(EventPool eventPool, ConsequencePool consequencePool) {
         this.eventPool = eventPool;
         this.consequencePool = consequencePool;
     }

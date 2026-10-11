@@ -7,10 +7,10 @@ public abstract class BaseReactor implements Reactor {
 
     private final String componentId;
 
-    private final BlockingQueue<Event> consequencePool;
+    private final ConsequencePool consequencePool;
     private volatile boolean isRunning = true;
 
-    public BaseReactor(String componentId, BlockingQueue<Event> consequencePool) {
+    public BaseReactor(String componentId, ConsequencePool consequencePool) {
         this.componentId = componentId;
         this.consequencePool = consequencePool;
     }
@@ -26,7 +26,7 @@ public abstract class BaseReactor implements Reactor {
         while (isRunning) {
             try {
 
-                Event event = consequencePool.take();
+                Event event = consequencePool.take(componentId);
 
 
                 if (event.getCompID().equals(this.componentId)) {
