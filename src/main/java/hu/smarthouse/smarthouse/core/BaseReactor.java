@@ -29,14 +29,8 @@ public abstract class BaseReactor implements Reactor {
                 Event event = consequencePool.take(componentId);
 
 
-                if (event.getCompID().equals(this.componentId)) {
-                    react(event);
-                } else {
+                react(event);
 
-                    consequencePool.put(event);
-
-                    Thread.sleep(50);
-                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println("Reactor " + componentId + " stopped.");

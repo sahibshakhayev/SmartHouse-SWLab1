@@ -11,6 +11,9 @@ module hu.smarthouse.smarthouse {
     requires eu.hansolo.tilesfx;
     requires static lombok;
 
-    opens hu.smarthouse.smarthouse to javafx.fxml;
-    exports hu.smarthouse.smarthouse;
+    opens hu.smarthouse.smarthouse.ui to javafx.graphics, javafx.fxml;
+    exports hu.smarthouse.smarthouse.ui;
+
+    exports hu.smarthouse.smarthouse.core;
+    exports hu.smarthouse.smarthouse.model;
 }
