@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.geometry.Insets?>
+        <?import javafx.scene.control.Button?>
+        <?import javafx.scene.control.Label?>
+        <?import javafx.scene.control.Slider?>
+        <?import javafx.scene.control.TextArea?>
+        <?import javafx.scene.image.ImageView?>
+        <?import javafx.scene.layout.BorderPane?>
+        <?import javafx.scene.layout.GridPane?>
+        <?import javafx.scene.layout.HBox?>
+        <?import javafx.scene.layout.VBox?>
+        <?import javafx.scene.text.Font?>
+
+<BorderPane prefHeight="650.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="hu.smarthouse.smarthouse.ui.DashboardController">
+
+    <!-- LEFT SIDEBAR: Navigation Menu -->
+    <left>
+        <VBox prefWidth="200.0" spacing="15.0" style="-fx-background-color: #2b2b2b; -fx-padding: 20;">
+            <Label text="Smart House" textFill="WHITE">
+                <font>
+                    <Font name="System Bold" size="20.0" />
+                </font>
+                <VBox.margin>
+                    <Insets bottom="20.0" />
+                </VBox.margin>
+            </Label>
+            <Button maxWidth="Infinity" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Bathroom" />
+            <Button maxWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;" text="Kitchen (WIP)" />
+            <Button maxWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;" text="Living Room (WIP)" />
+        </VBox>
+    </left>
+
+    <!-- CENTER: Main Dashboard Area -->
+    <center>
+        <VBox spacing="20.0" style="-fx-padding: 20; -fx-background-color: #f4f4f4;">
+            <Label text="Bathroom Dashboard">
+                <font>
+                    <Font name="System Bold" size="24.0" />
+                </font>
+            </Label>
+
+            <!-- Cards Grid -->
+            <GridPane hgap="20.0" vgap="20.0">
+                <!-- Light Control Card -->
+                <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label style="-fx-font-weight: bold;" text="Main Light" />
+                    <ImageView fx:id="lightIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
+                    <Label fx:id="lightStatus" text="Status: OFF" />
+                    <Button onAction="#onToggleLight" text="Toggle Light" />
+                </VBox>
+
+                <!-- Fan Control Card -->
+                <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label style="-fx-font-weight: bold;" text="Exhaust Fan" />
+                    <ImageView fx:id="fanIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
+                    <Label fx:id="fanStatus" text="Status: OFF" />
+                    <Button onAction="#onToggleFan" text="Toggle Fan" />
+                </VBox>
+
+                <!-- Sensor Simulation & Settings Card -->
+                <VBox alignment="CENTER_LEFT" prefHeight="180.0" prefWidth="300.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                    <Label style="-fx-font-weight: bold;" text="Sensor Settings &amp; Triggers" />
+                    <HBox spacing="10.0">
+                        <Button onAction="#onPersonEnters" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Person Enters" />
+                        <Button onAction="#onPersonLeaves" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Person Leaves" />
+                    </HBox>
+                    <Label text="Fan Auto-Shutoff Delay (Minutes):" />
+                    <Slider fx:id="fanDelaySlider" blockIncrement="1.0" majorTickUnit="5.0" max="30.0" min="1.0" showTickLabels="true" showTickMarks="true" value="10.0" />
+                </VBox>
+            </GridPane>
+        </VBox>
+    </center>
+
+    <!-- BOTTOM: System Monitor Log -->
+    <bottom>
+        <VBox style="-fx-padding: 10;">
+            <Label style="-fx-font-weight: bold; -fx-padding: 0 0 5 0;" text="System Monitor Log" />
+            <TextArea fx:id="logArea" editable="false" prefHeight="150.0" style="-fx-font-family: monospace; -fx-background-color: #1e1e1e; -fx-text-fill: #00ff00;" />
+        </VBox>
+    </bottom>
+</BorderPane>
