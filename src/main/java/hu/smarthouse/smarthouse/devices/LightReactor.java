@@ -7,28 +7,28 @@ import hu.smarthouse.smarthouse.ui.DashboardController;
 
 public class LightReactor extends BaseReactor {
     private final DashboardController controller;
+    private final String localCompID;
     private boolean isOn = false;
 
-    public LightReactor(ConsequencePool pool, DashboardController controller) {
-        super("BATHROOM_LIGHT", pool);
+    public LightReactor(String compID, ConsequencePool pool, DashboardController controller) {
+        super(compID, pool);
+        this.localCompID = compID;
         this.controller = controller;
     }
 
     @Override
     public void react(Event event) {
         switch (event.getType()) {
-            case "TURN_ON":
-                isOn = true;
-                break;
-            case "TURN_OFF":
-                isOn = false;
-                break;
-            case "TOGGLE":
-                isOn = !isOn; // Switch to the opposite state
-                break;
+            case "TURN_ON" -> isOn = true;
+            case "TURN_OFF" -> isOn = false;
+            case "TOGGLE" -> isOn = !isOn;
         }
 
-        // Update UI safely
-        controller.updateLightStatus(isOn);
+
+        if ("KITCHEN_LIGHT".equals(this.localCompID)) {
+            controller.updateKitchenLightStatus(isOn);
+        } else {
+            controller.updateLightStatus(isOn);
+        }
     }
 }

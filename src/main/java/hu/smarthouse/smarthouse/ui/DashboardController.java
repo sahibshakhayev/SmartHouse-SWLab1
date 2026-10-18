@@ -34,9 +34,23 @@ public class DashboardController {
     @FXML private ImageView lightIcon;
     @FXML private Label lightStatus;
 
+    @FXML private Button kitchenNavButton;
+    @FXML private GridPane kitchenView;
+    @FXML private ImageView kitchenLightIcon;
+    @FXML private Label kitchenLightStatus;
+
     // Fan Components
     @FXML private ImageView fanIcon;
     @FXML private Label fanStatus;
+
+    @FXML private Label indoorTempLabel;
+    @FXML private Label targetTempLabel;
+    @FXML private Label outdoorTempLabel;
+    @FXML private Label climateModeLabel;
+    @FXML private Button autoModeButton;
+
+    @FXML private Label valveStatusLabel;
+    @FXML private Label leakAlertLabel;
 
     // Window Components
 
@@ -72,7 +86,7 @@ public class DashboardController {
             imgLightOff = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/light_off.png")));
             imgFanOn = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/fan_on.gif")));
             imgFanOff = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/fan_off.png")));
-
+            kitchenLightIcon.setImage(imgLightOff);
             imgWindowOpen = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/window_open.png")));
             imgWindowClosed = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/window_closed.png")));
 
@@ -101,24 +115,30 @@ public class DashboardController {
     // --- User Interaction Events ---
 
     @FXML
-    private void onShowBathroom() {
-        showView(true);
-    }
+    private void onShowBathroom() { showView("BATHROOM"); }
 
     @FXML
-    private void onShowLivingRoom() {
-        showView(false);
-    }
+    private void onShowLivingRoom() { showView("LIVING_ROOM"); }
 
-    private void showView(boolean bathroom) {
-        bathroomView.setVisible(bathroom);
-        bathroomView.setManaged(bathroom);
-        livingRoomView.setVisible(!bathroom);
-        livingRoomView.setManaged(!bathroom);
+    @FXML
+    private void onShowKitchen() { showView("KITCHEN"); }
 
-        pageTitle.setText(bathroom ? "Bathroom Dashboard" : "Living Room Dashboard");
-        bathroomNavButton.setStyle(bathroom ? NAV_ACTIVE : NAV_INACTIVE);
-        livingRoomNavButton.setStyle(bathroom ? NAV_INACTIVE : NAV_ACTIVE);
+    private void showView(String viewName) {
+        boolean isBath = viewName.equals("BATHROOM");
+        boolean isLiv = viewName.equals("LIVING_ROOM");
+        boolean isKitch = viewName.equals("KITCHEN");
+
+        bathroomView.setVisible(isBath); bathroomView.setManaged(isBath);
+        livingRoomView.setVisible(isLiv); livingRoomView.setManaged(isLiv);
+        kitchenView.setVisible(isKitch); kitchenView.setManaged(isKitch);
+
+        if(isBath) pageTitle.setText("Bathroom Dashboard");
+        else if(isLiv) pageTitle.setText("Living Room Dashboard");
+        else pageTitle.setText("Kitchen Dashboard");
+
+        bathroomNavButton.setStyle(isBath ? NAV_ACTIVE : NAV_INACTIVE);
+        livingRoomNavButton.setStyle(isLiv ? NAV_ACTIVE : NAV_INACTIVE);
+        kitchenNavButton.setStyle(isKitch ? NAV_ACTIVE : NAV_INACTIVE);
     }
 
     @FXML
@@ -139,6 +159,18 @@ public class DashboardController {
     @FXML
     private void onPresenceDetected() {
         sendEvent(new Event("SENSOR_TRIGGER", "Presence detected", "BATHROOM_FAN"));
+    }
+
+    @FXML
+    private void onToggleKitchenLight() {
+        sendEvent(new Event("TOGGLE", "User toggled kitchen light", "KITCHEN_LIGHT"));
+    }
+
+    public void updateKitchenLightStatus(boolean isOn) {
+        Platform.runLater(() -> {
+            kitchenLightIcon.setImage(isOn ? imgLightOn : imgLightOff);
+            kitchenLightStatus.setText(isOn ? "Status: ON" : "Status: OFF");
+        });
     }
 
     @FXML
@@ -164,6 +196,96 @@ public class DashboardController {
         sendEvent(new Event("TURN_OFF", "Person left bathroom", "BATHROOM_LIGHT"));
         sendEvent(new Event("TURN_ON_TIMER", String.valueOf(delayMinutes), "BATHROOM_FAN"));
     }
+
+
+    // --- Thermostat Interactions ---
+
+    @FXML
+    private void onToggleAutoClimate() {
+        sendEvent(new Event("TOGGLE_AUTO", "User toggled auto climate", "LIVING_ROOM_THERMOSTAT"));
+    }
+
+    @FXML
+    private void onTempUp() {
+        sendEvent(new Event("TEMP_UP", "User increased target temp", "LIVING_ROOM_THERMOSTAT"));
+    }
+
+    @FXML
+    private void onTempDown() {
+        sendEvent(new Event("TEMP_DOWN", "User decreased target temp", "LIVING_ROOM_THERMOSTAT"));
+    }
+
+    @FXML
+    private void onModeHeat() {
+        sendEvent(new Event("MODE_HEAT", "User set mode to HEAT", "LIVING_ROOM_THERMOSTAT"));
+    }
+
+    @FXML
+    private void onModeCool() {
+        sendEvent(new Event("MODE_COOL", "User set mode to COOL", "LIVING_ROOM_THERMOSTAT"));
+    }
+
+    @FXML
+    private void onModeOff() {
+        sendEvent(new Event("MODE_OFF", "User turned off climate control", "LIVING_ROOM_THERMOSTAT"));
+    }
+
+    // --- Water Pipes Interactions ---
+
+    @FXML
+    private void onOpenValve() {
+        sendEvent(new Event("VALVE_OPEN", "User opened main valve", "HOUSE_WATER_PIPES"));
+    }
+
+    @FXML
+    private void onCloseValve() {
+        sendEvent(new Event("VALVE_CLOSE", "User closed main valve", "HOUSE_WATER_PIPES"));
+    }
+
+    @FXML
+    private void onTriggerLeak() {
+        sendEvent(new Event("TRIGGER_LEAK", "Critical leak detected by sensor", "HOUSE_WATER_PIPES"));
+    }
+
+    @FXML
+    private void onResolveLeak() {
+        sendEvent(new Event("RESOLVE_LEAK", "Leak resolved manually", "HOUSE_WATER_PIPES"));
+    }
+
+    public void updateThermostatStatus(double currentTemp, double targetTemp, double outdoorTemp, String mode, boolean isAuto) {
+        Platform.runLater(() -> {
+            if (indoorTempLabel != null) {
+                indoorTempLabel.setText(String.format("Indoor: %.1f°C", currentTemp));
+                targetTempLabel.setText(String.format("Target: %.1f°C", targetTemp));
+                outdoorTempLabel.setText(String.format("Outdoor (API): %.1f°C", outdoorTemp));
+
+                String modeText = isAuto ? "AUTO (" + mode + ")" : "MANUAL (" + mode + ")";
+                climateModeLabel.setText("Mode: " + modeText);
+
+                // Visually toggle Auto button state
+                autoModeButton.setStyle(isAuto ? "-fx-background-color: #4CAF50; -fx-text-fill: white;" : "-fx-background-color: #9e9e9e; -fx-text-fill: white;");
+            }
+        });
+    }
+
+    public void updateWaterStatus(boolean valveOpen, boolean leak) {
+        Platform.runLater(() -> {
+            if (valveStatusLabel != null) {
+                valveStatusLabel.setText(valveOpen ? "VALVE: OPEN" : "VALVE: CLOSED");
+                valveStatusLabel.setStyle(valveOpen ? "-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;" : "-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #f44336;");
+
+                leakAlertLabel.setText(leak ? "CRITICAL: LEAK DETECTED!" : "NO LEAKS DETECTED");
+                leakAlertLabel.setStyle(leak ? "-fx-font-size: 14px; -fx-text-fill: red; -fx-font-weight: bold;" : "-fx-font-size: 14px; -fx-text-fill: #9e9e9e;");
+            }
+        });
+    }
+
+
+
+
+
+
+
 
     // --- Window ---
 
@@ -243,6 +365,18 @@ public class DashboardController {
         });
     }
 
+
+    public void updateThermostatStatus(double currentTemp, double targetTemp, String mode) {
+        Platform.runLater(() -> {
+
+            // tempLabel.setText(currentTemp + "°C / Target: " + targetTemp + "°C");
+            // modeLabel.setText("Mode: " + mode);
+            System.out.println(String.format("UI UPDATE: Temp %.1f°C (Target: %.1f°C) [%s]", currentTemp, targetTemp, mode));
+        });
+    }
+
+
+
     public void updateWindowStatus(boolean isOpen, int shadeLevel) {
         Platform.runLater(() -> {
             if (imgWindowOpen != null && imgWindowClosed != null) {
@@ -259,4 +393,9 @@ public class DashboardController {
             doorStatus.setText(isOpen ? "OPEN" : "CLOSED" + (isLocked ? " | LOCKED" : " | UNLOCKED"));
         });
     }
+
+
+
+
+
 }

@@ -39,7 +39,7 @@ public class FanReactor extends BaseReactor {
                 timerTask = scheduler.schedule(() -> {
                     isOn = false;
                     controller.updateFanStatus(false);
-                }, delayMinutes, TimeUnit.MINUTES);
+                }, delayMinutes, TimeUnit.SECONDS);
                 break;
 
             case "TURN_OFF":
