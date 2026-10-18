@@ -1,20 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Label?>
 <?import javafx.geometry.Insets?>
-        <?import javafx.scene.control.Button?>
-        <?import javafx.scene.control.Label?>
-        <?import javafx.scene.control.Slider?>
-        <?import javafx.scene.control.TextArea?>
-        <?import javafx.scene.image.ImageView?>
-        <?import javafx.scene.layout.BorderPane?>
-        <?import javafx.scene.layout.GridPane?>
-        <?import javafx.scene.layout.HBox?>
-        <?import javafx.scene.layout.VBox?>
-        <?import javafx.scene.text.Font?>
-
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
 <BorderPane prefHeight="650.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="hu.smarthouse.smarthouse.ui.DashboardController">
 
     <!-- LEFT SIDEBAR: Navigation Menu -->
@@ -28,23 +18,23 @@
                     <Insets bottom="20.0" />
                 </VBox.margin>
             </Label>
-            <Button maxWidth="Infinity" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Bathroom" />
+            <Button fx:id="bathroomNavButton" maxWidth="Infinity" onAction="#onShowBathroom" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Bathroom" />
             <Button maxWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;" text="Kitchen (WIP)" />
-            <Button maxWidth="Infinity" style="-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;" text="Living Room (WIP)" />
-        </VBox>
+            <Button fx:id="livingRoomNavButton" maxWidth="Infinity" onAction="#onShowLivingRoom" style="-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;" text="Living Room" />        </VBox>
     </left>
 
     <!-- CENTER: Main Dashboard Area -->
     <center>
         <VBox spacing="20.0" style="-fx-padding: 20; -fx-background-color: #f4f4f4;">
-            <Label text="Bathroom Dashboard">
+            <Label fx:id="pageTitle" text="Bathroom Dashboard">
                 <font>
                     <Font name="System Bold" size="24.0" />
                 </font>
             </Label>
+            <StackPane>
 
             <!-- Cards Grid -->
-            <GridPane hgap="20.0" vgap="20.0">
+            <GridPane fx:id="bathroomView" hgap="20.0" vgap="20.0">
                 <!-- Light Control Card -->
                 <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="0" GridPane.rowIndex="0">
                     <Label style="-fx-font-weight: bold;" text="Main Light" />
@@ -72,6 +62,42 @@
                     <Slider fx:id="fanDelaySlider" blockIncrement="1.0" majorTickUnit="5.0" max="30.0" min="1.0" showTickLabels="true" showTickMarks="true" value="10.0" />
                 </VBox>
             </GridPane>
+
+            <GridPane fx:id="livingRoomView" hgap="20.0" vgap="20.0" visible="false" managed="false">
+
+                <!-- Window Control Card -->
+                <VBox alignment="CENTER" prefHeight="260.0" prefWidth="380.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                    <Label style="-fx-font-weight: bold;" text="Window &amp; Shade" />
+                    <ImageView fx:id="windowIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
+                    <Label fx:id="windowStatus" text="CLOSED | Shade: 0%" />
+                    <HBox alignment="CENTER" spacing="10.0">
+                        <Button onAction="#onOpenWindow" text="Open" />
+                        <Button onAction="#onCloseWindow" text="Close" />
+                        <Button onAction="#onShadeUp" text="Shade Up" />
+                        <Button onAction="#onShadeDown" text="Shade Down" />
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="10.0">
+                        <Slider fx:id="shadeSlider" blockIncrement="5.0" majorTickUnit="25.0" max="100.0" min="0.0" prefWidth="220.0" showTickLabels="true" showTickMarks="true" value="0.0" />
+                        <Button onAction="#onSetShade" text="Set Shade" />
+                    </HBox>
+                </VBox>
+
+                <!-- Door Control Card -->
+                <VBox alignment="CENTER" prefHeight="260.0" prefWidth="300.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                    <Label style="-fx-font-weight: bold;" text="Front Door" />
+                    <ImageView fx:id="doorIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
+                    <Label fx:id="doorStatus" text="CLOSED | UNLOCKED" />
+                    <HBox alignment="CENTER" spacing="10.0">
+                        <Button onAction="#onOpenDoor" text="Open" />
+                        <Button onAction="#onCloseDoor" text="Close" />
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="10.0">
+                        <Button onAction="#onLockDoor" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Lock" />
+                        <Button onAction="#onUnlockDoor" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Unlock" />
+                    </HBox>
+                </VBox>
+            </GridPane>
+            </StackPane>
         </VBox>
     </center>
 
