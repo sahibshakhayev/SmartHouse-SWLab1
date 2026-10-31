@@ -6,11 +6,12 @@ import hu.smarthouse.smarthouse.model.Event;
 import hu.smarthouse.smarthouse.ui.DashboardController;
 
 public class DoorReactor extends BaseReactor {
-    private final DoorActuator door = new DoorActuator("FRONT_DOOR");
+    private final DoorActuator door;
     private final DashboardController controller;
 
-    public DoorReactor(ConsequencePool pool, DashboardController controller) {
-        super("FRONT_DOOR", pool);
+    public DoorReactor(String compId, ConsequencePool pool, DashboardController controller) {
+        super(compId, pool);
+        this.door = new DoorActuator(compId);
         this.controller = controller;
     }
 
@@ -19,9 +20,10 @@ public class DoorReactor extends BaseReactor {
         try {
             System.out.println("Check door: " + event.getMessage());
             door.execute(event);
-            controller.updateDoorStatus(door.isOpen(), door.isLocked());
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("[Door] rejected: " + e.getMessage());
         }
+
+        controller.updateDoorStatus(door.isOpen(), door.isLocked());
     }
 }

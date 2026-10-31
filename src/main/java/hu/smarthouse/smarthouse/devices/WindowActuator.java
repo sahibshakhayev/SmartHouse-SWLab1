@@ -8,8 +8,8 @@ public class WindowActuator extends Actuator {
     private boolean open = false;
     private int shadeLevel = 0; // 0 = fully raised, 100 = fully lowered
 
-    public WindowActuator(String compID) {
-        super(compID);
+    public WindowActuator(String compId) {
+        super(compId);
     }
 
     @Override

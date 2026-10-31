@@ -8,8 +8,8 @@ public class DoorActuator extends Actuator {
     private boolean open = false;
     private boolean locked = false;
 
-    public DoorActuator(String compID) {
-        super(compID);
+    public DoorActuator(String compId) {
+        super(compId);
     }
 
     @Override

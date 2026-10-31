@@ -13,6 +13,7 @@ module hu.smarthouse.smarthouse {
     requires java.net.http;
     requires org.json;
     requires io.github.cdimascio.dotenv.java;
+    requires java.sql;
 
     opens hu.smarthouse.smarthouse.ui to javafx.graphics, javafx.fxml;
     exports hu.smarthouse.smarthouse.ui;

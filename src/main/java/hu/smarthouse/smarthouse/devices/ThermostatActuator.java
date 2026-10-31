@@ -10,8 +10,8 @@ public class ThermostatActuator extends Actuator {
     private boolean autoMode = true;
     private String mode = "OFF";
 
-    public ThermostatActuator(String compID) {
-        super(compID);
+    public ThermostatActuator(String compId) {
+        super(compId);
     }
 
     @Override
