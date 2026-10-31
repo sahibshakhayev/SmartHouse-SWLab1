@@ -6,11 +6,12 @@ import hu.smarthouse.smarthouse.model.Event;
 import hu.smarthouse.smarthouse.ui.DashboardController;
 
 public class WindowReactor extends BaseReactor {
-    private final WindowActuator window = new WindowActuator("LIVING_ROOM_WINDOW");
+    private final WindowActuator window;
     private final DashboardController controller;
 
-    public WindowReactor(ConsequencePool pool, DashboardController controller) {
-        super("LIVING_ROOM_WINDOW", pool);
+    public WindowReactor(String compId, ConsequencePool pool, DashboardController controller) {
+        super(compId, pool);
+        this.window = new WindowActuator(compId);
         this.controller = controller;
     }
 
@@ -18,9 +19,10 @@ public class WindowReactor extends BaseReactor {
     public void react(Event event) {
         try {
             window.execute(event);
-            controller.updateWindowStatus(window.isOpen(), window.getShadeLevel());
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("[Window] rejected: " + e.getMessage());
         }
+
+        controller.updateWindowStatus(window.isOpen(), window.getShadeLevel());
     }
 }

@@ -7,8 +7,8 @@ public class WaterActuator extends Actuator {
     private boolean mainValveOpen = true;
     private boolean leakDetected = false;
 
-    public WaterActuator(String compID) {
-        super(compID);
+    public WaterActuator(String compId) {
+        super(compId);
     }
 
     @Override

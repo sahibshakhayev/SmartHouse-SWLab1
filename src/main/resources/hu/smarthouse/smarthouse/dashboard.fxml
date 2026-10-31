@@ -2,157 +2,248 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<BorderPane prefHeight="650.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="hu.smarthouse.smarthouse.ui.DashboardController">
+<BorderPane prefHeight="650.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="hu.smarthouse.smarthouse.ui.DashboardController">
 
     <!-- LEFT SIDEBAR: Navigation Menu -->
     <left>
         <VBox prefWidth="200.0" spacing="15.0" style="-fx-background-color: #2b2b2b; -fx-padding: 20;">
             <Label text="Smart House" textFill="WHITE">
                 <font>
-                    <Font name="System Bold" size="20.0" />
+                    <Font name="System Bold" size="20.0"/>
                 </font>
                 <VBox.margin>
-                    <Insets bottom="20.0" />
+                    <Insets bottom="20.0"/>
                 </VBox.margin>
             </Label>
-            <Button fx:id="bathroomNavButton" maxWidth="Infinity" onAction="#onShowBathroom" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Bathroom" />
-            <Button fx:id="kitchenNavButton" maxWidth="Infinity" onAction="#onShowKitchen" style="-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;" text="Kitchen" />
-            <Button fx:id="livingRoomNavButton" maxWidth="Infinity" onAction="#onShowLivingRoom" style="-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;" text="Living Room" />        </VBox>
+            <Button fx:id="bathroomNavButton" maxWidth="Infinity" onAction="#onShowBathroom"
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Bathroom"/>
+            <Button fx:id="kitchenNavButton" maxWidth="Infinity" onAction="#onShowKitchen"
+                    style="-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;"
+                    text="Kitchen"/>
+            <Button fx:id="livingRoomNavButton" maxWidth="Infinity" onAction="#onShowLivingRoom"
+                    style="-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;"
+                    text="Living Room"/>
+        </VBox>
     </left>
 
     <!-- CENTER: Main Dashboard Area -->
     <center>
-        <VBox spacing="20.0" style="-fx-padding: 20; -fx-background-color: #f4f4f4;">
-            <Label fx:id="pageTitle" text="Bathroom Dashboard">
-                <font>
-                    <Font name="System Bold" size="24.0" />
-                </font>
-            </Label>
-            <StackPane>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER"
+                    style="-fx-background: #f4f4f4; -fx-background-color: #f4f4f4;">
+            <VBox spacing="20.0" style="-fx-padding: 20; -fx-background-color: #f4f4f4;">
+                <Label fx:id="pageTitle" text="Bathroom Dashboard">
+                    <font>
+                        <Font name="System Bold" size="24.0"/>
+                    </font>
+                </Label>
+                <StackPane>
 
-            <!-- Cards Grid -->
-            <GridPane fx:id="bathroomView" hgap="20.0" vgap="20.0">
-                <!-- Light Control Card -->
-                <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                    <Label style="-fx-font-weight: bold;" text="Main Light" />
-                    <ImageView fx:id="lightIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
-                    <Label fx:id="lightStatus" text="Status: OFF" />
-                    <Button onAction="#onToggleLight" text="Toggle Light" />
-                </VBox>
+                    <!-- Cards Grid -->
+                    <GridPane fx:id="bathroomView" hgap="20.0" vgap="20.0">
+                        <!-- Light Control Card -->
+                        <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <Label style="-fx-font-weight: bold;" text="Main Light"/>
+                            <ImageView fx:id="lightIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true"
+                                       preserveRatio="true"/>
+                            <Label fx:id="lightStatus" text="Status: OFF"/>
+                            <Button onAction="#onToggleLight" text="Toggle Light"/>
+                        </VBox>
 
-                <!-- Fan Control Card -->
-                <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                    <Label style="-fx-font-weight: bold;" text="Exhaust Fan" />
-                    <ImageView fx:id="fanIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
-                    <Label fx:id="fanStatus" text="Status: OFF" />
-                    <Button onAction="#onToggleFan" text="Toggle Fan" />
-                </VBox>
+                        <!-- Fan Control Card -->
+                        <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <Label style="-fx-font-weight: bold;" text="Exhaust Fan"/>
+                            <ImageView fx:id="fanIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true"
+                                       preserveRatio="true"/>
+                            <Label fx:id="fanStatus" text="Status: OFF"/>
+                            <Button onAction="#onToggleFan" text="Toggle Fan"/>
+                        </VBox>
 
-                <!-- Sensor Simulation & Settings Card -->
-                <VBox alignment="CENTER_LEFT" prefHeight="180.0" prefWidth="300.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="2" GridPane.rowIndex="0">
-                    <Label style="-fx-font-weight: bold;" text="Sensor Settings &amp; Triggers" />
-                    <HBox spacing="10.0">
-                        <Button onAction="#onPersonEnters" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Person Enters" />
-                        <Button onAction="#onPersonLeaves" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Person Leaves" />
-                    </HBox>
-                    <Label text="Fan Auto-Shutoff Delay (Minutes):" />
-                    <Slider fx:id="fanDelaySlider" blockIncrement="1.0" majorTickUnit="5.0" max="30.0" min="1.0" showTickLabels="true" showTickMarks="true" value="10.0" />
-                </VBox>
-            </GridPane>
+                        <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="0" GridPane.rowIndex="1">
+                            <Label style="-fx-font-weight: bold;" text="Bathroom Plug"/>
+                            <ImageView fx:id="bathRoomPlugIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true"
+                                       preserveRatio="true"/>
+                            <Label fx:id="bathRoomPlugStatus" text="Status: ON"/>
+                            <Button onAction="#onToggleBathroomPlug" text="Toggle Plug"/>
+                        </VBox>
 
-                <GridPane fx:id="kitchenView" hgap="20.0" vgap="20.0" visible="false" managed="false">
-                    <!-- Kitchen Light Card -->
-                    <VBox alignment="CENTER" prefHeight="260.0" prefWidth="200.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                        <Label style="-fx-font-weight: bold;" text="Kitchen Light" />
-                        <ImageView fx:id="kitchenLightIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
-                        <Label fx:id="kitchenLightStatus" text="Status: OFF" />
-                        <Button onAction="#onToggleKitchenLight" text="Toggle Light" />
-                    </VBox>
+                        <!-- Sensor Simulation & Settings Card -->
+                        <VBox alignment="CENTER_LEFT" prefHeight="180.0" prefWidth="300.0" spacing="15.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="2" GridPane.rowIndex="0">
+                            <Label style="-fx-font-weight: bold;" text="Sensor Settings &amp; Triggers"/>
+                            <HBox spacing="10.0">
+                                <Button onAction="#onPersonEnters"
+                                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;"
+                                        text="Person Enters"/>
+                                <Button onAction="#onPersonLeaves"
+                                        style="-fx-background-color: #f44336; -fx-text-fill: white;"
+                                        text="Person Leaves"/>
+                            </HBox>
+                            <HBox spacing="10.0">
+                                <Button onAction="#onMotionDetected"
+                                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Motion"/>
+                                <Button onAction="#onNoMotion"
+                                        style="-fx-background-color: #f44336; -fx-text-fill: white;" text="No Motion"/>
+                            </HBox>
+                            <Label text="Fan Auto-Shutoff Delay (Minutes):"/>
+                            <Slider fx:id="fanDelaySlider" blockIncrement="1.0" majorTickUnit="5.0" max="30.0" min="1.0"
+                                    showTickLabels="true" showTickMarks="true" value="10.0"/>
+                        </VBox>
+                    </GridPane>
 
-                    <VBox alignment="CENTER" prefHeight="260.0" prefWidth="300.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                        <Label style="-fx-font-weight: bold;" text="Water System &amp; Safety" />
-                        <Label fx:id="valveStatusLabel" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;" text="VALVE: OPEN" />
-                        <Label fx:id="leakAlertLabel" style="-fx-font-size: 14px; -fx-text-fill: #9e9e9e;" text="NO LEAKS DETECTED" />
-                        <HBox alignment="CENTER" spacing="10.0">
-                            <Button onAction="#onOpenValve" text="Open Valve" />
-                            <Button onAction="#onCloseValve" text="Close Valve" />
-                        </HBox>
-                        <HBox alignment="CENTER" spacing="10.0">
-                            <Button onAction="#onTriggerLeak" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Simulate Leak" />
-                            <Button onAction="#onResolveLeak" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Resolve Leak" />
-                        </HBox>
-                    </VBox>
-                </GridPane>
+                    <GridPane fx:id="kitchenView" hgap="20.0" vgap="20.0" visible="false" managed="false">
+                        <!-- Kitchen Light Card -->
+                        <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <Label style="-fx-font-weight: bold;" text="Kitchen Light"/>
+                            <ImageView fx:id="kitchenLightIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true"
+                                       preserveRatio="true"/>
+                            <Label fx:id="kitchenLightStatus" text="Status: OFF"/>
+                            <Button onAction="#onToggleKitchenLight" text="Toggle Light"/>
+                        </VBox>
+
+                        <!-- Kitchen Plug Card-->
+                        <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <Label style="-fx-font-weight: bold;" text="Kitchen Plug"/>
+                            <ImageView fx:id="kitchenPlugIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true"
+                                       preserveRatio="true"/>
+                            <Label fx:id="kitchenPlugStatus" text="Status: ON"/>
+                            <Button onAction="#onToggleKitchenPlug" text="Toggle Plug"/>
+                        </VBox>
+
+                        <VBox alignment="CENTER" prefHeight="260.0" prefWidth="300.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <Label style="-fx-font-weight: bold;" text="Water System &amp; Safety"/>
+                            <Label fx:id="valveStatusLabel"
+                                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #4CAF50;"
+                                   text="VALVE: OPEN"/>
+                            <Label fx:id="leakAlertLabel" style="-fx-font-size: 14px; -fx-text-fill: #9e9e9e;"
+                                   text="NO LEAKS DETECTED"/>
+                            <HBox alignment="CENTER" spacing="10.0">
+                                <Button onAction="#onOpenValve" text="Open Valve"/>
+                                <Button onAction="#onCloseValve" text="Close Valve"/>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10.0">
+                                <Button onAction="#onTriggerLeak"
+                                        style="-fx-background-color: #f44336; -fx-text-fill: white;"
+                                        text="Simulate Leak"/>
+                                <Button onAction="#onResolveLeak"
+                                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;"
+                                        text="Resolve Leak"/>
+                            </HBox>
+                        </VBox>
+                    </GridPane>
 
 
-            <GridPane fx:id="livingRoomView" hgap="20.0" vgap="20.0" visible="false" managed="false">
+                    <GridPane fx:id="livingRoomView" hgap="20.0" vgap="20.0" visible="false" managed="false">
+                        <!-- Living Room Light Card -->
+                        <VBox alignment="CENTER" prefHeight="180.0" prefWidth="200.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="0" GridPane.rowIndex="1">
+                            <Label style="-fx-font-weight: bold;" text="Main Light"/>
+                            <ImageView fx:id="livingRoomLightIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true"
+                                       preserveRatio="true"/>
+                            <Label fx:id="livingRoomLightStatus" text="Status: OFF"/>
+                            <Button onAction="#onToggleLivingRoomLight" text="Toggle Light"/>
+                        </VBox>
+                        <!-- Living Room Window Card -->
+                        <VBox alignment="CENTER" prefHeight="260.0" prefWidth="380.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="0" GridPane.rowIndex="0">
+                            <Label style="-fx-font-weight: bold;" text="Window &amp; Shade"/>
+                            <ImageView fx:id="windowIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true"
+                                       preserveRatio="true"/>
+                            <Label fx:id="windowStatus" text="CLOSED | Shade: 0%"/>
+                            <HBox alignment="CENTER" spacing="10.0">
+                                <Button onAction="#onOpenWindow" text="Open"/>
+                                <Button onAction="#onCloseWindow" text="Close"/>
+                                <Button onAction="#onShadeUp" text="Shade Up"/>
+                                <Button onAction="#onShadeDown" text="Shade Down"/>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10.0">
+                                <Slider fx:id="shadeSlider" blockIncrement="5.0" majorTickUnit="25.0" max="100.0"
+                                        min="0.0" prefWidth="220.0" showTickLabels="true" showTickMarks="true"
+                                        value="0.0"/>
+                                <Button onAction="#onSetShade" text="Set Shade"/>
+                            </HBox>
+                        </VBox>
 
-                <!-- Window Control Card -->
-                <VBox alignment="CENTER" prefHeight="260.0" prefWidth="380.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                    <Label style="-fx-font-weight: bold;" text="Window &amp; Shade" />
-                    <ImageView fx:id="windowIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
-                    <Label fx:id="windowStatus" text="CLOSED | Shade: 0%" />
-                    <HBox alignment="CENTER" spacing="10.0">
-                        <Button onAction="#onOpenWindow" text="Open" />
-                        <Button onAction="#onCloseWindow" text="Close" />
-                        <Button onAction="#onShadeUp" text="Shade Up" />
-                        <Button onAction="#onShadeDown" text="Shade Down" />
-                    </HBox>
-                    <HBox alignment="CENTER" spacing="10.0">
-                        <Slider fx:id="shadeSlider" blockIncrement="5.0" majorTickUnit="25.0" max="100.0" min="0.0" prefWidth="220.0" showTickLabels="true" showTickMarks="true" value="0.0" />
-                        <Button onAction="#onSetShade" text="Set Shade" />
-                    </HBox>
-                </VBox>
+                        <!-- Door Control Card -->
+                        <VBox alignment="CENTER" prefHeight="260.0" prefWidth="300.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="1" GridPane.rowIndex="0">
+                            <Label style="-fx-font-weight: bold;" text="Front Door"/>
+                            <ImageView fx:id="doorIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true"
+                                       preserveRatio="true"/>
+                            <Label fx:id="doorStatus" text="CLOSED | UNLOCKED"/>
+                            <HBox alignment="CENTER" spacing="10.0">
+                                <Button onAction="#onOpenDoor" text="Open"/>
+                                <Button onAction="#onCloseDoor" text="Close"/>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10.0">
+                                <Button onAction="#onLockDoor"
+                                        style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Lock"/>
+                                <Button onAction="#onUnlockDoor"
+                                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Unlock"/>
+                            </HBox>
+                        </VBox>
 
-                <!-- Door Control Card -->
-                <VBox alignment="CENTER" prefHeight="260.0" prefWidth="300.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                    <Label style="-fx-font-weight: bold;" text="Front Door" />
-                    <ImageView fx:id="doorIcon" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" />
-                    <Label fx:id="doorStatus" text="CLOSED | UNLOCKED" />
-                    <HBox alignment="CENTER" spacing="10.0">
-                        <Button onAction="#onOpenDoor" text="Open" />
-                        <Button onAction="#onCloseDoor" text="Close" />
-                    </HBox>
-                    <HBox alignment="CENTER" spacing="10.0">
-                        <Button onAction="#onLockDoor" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="Lock" />
-                        <Button onAction="#onUnlockDoor" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Unlock" />
-                    </HBox>
-                </VBox>
+                        <!-- Thermostat Control Card -->
+                        <VBox alignment="CENTER" prefHeight="260.0" prefWidth="380.0" spacing="10.0"
+                              style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;"
+                              GridPane.columnIndex="1" GridPane.rowIndex="1">
+                            <Label style="-fx-font-weight: bold;" text="Climate Control (API Powered)"/>
+                            <Label fx:id="indoorTempLabel" style="-fx-font-size: 18px; -fx-font-weight: bold;"
+                                   text="Indoor: 20.0°C"/>
+                            <Label fx:id="targetTempLabel" text="Target: 22.0°C"/>
+                            <Label fx:id="outdoorTempLabel" text="Outdoor (API): --°C"/>
+                            <Label fx:id="climateModeLabel" text="Mode: AUTO (OFF)"/>
+                            <HBox alignment="CENTER" spacing="10.0">
+                                <Button onAction="#onTempDown"
+                                        style="-fx-background-color: #2196F3; -fx-text-fill: white;" text="- Temp"/>
+                                <Button onAction="#onTempUp"
+                                        style="-fx-background-color: #f44336; -fx-text-fill: white;" text="+ Temp"/>
+                                <Button fx:id="autoModeButton" onAction="#onToggleAutoClimate"
+                                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Auto Mode"/>
+                            </HBox>
+                            <HBox alignment="CENTER" spacing="10.0">
+                                <Button onAction="#onModeHeat"
+                                        style="-fx-background-color: #ff9800; -fx-text-fill: white;" text="Heat"/>
+                                <Button onAction="#onModeCool"
+                                        style="-fx-background-color: #03a9f4; -fx-text-fill: white;" text="Cool"/>
+                                <Button onAction="#onModeOff"
+                                        style="-fx-background-color: #9e9e9e; -fx-text-fill: white;" text="Off"/>
+                            </HBox>
+                        </VBox>
 
-                <!-- Thermostat Control Card -->
-                <VBox alignment="CENTER" prefHeight="260.0" prefWidth="380.0" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 8; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5); -fx-padding: 15;" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                    <Label style="-fx-font-weight: bold;" text="Climate Control (API Powered)" />
-                    <Label fx:id="indoorTempLabel" style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Indoor: 20.0°C" />
-                    <Label fx:id="targetTempLabel" text="Target: 22.0°C" />
-                    <Label fx:id="outdoorTempLabel" text="Outdoor (API): --°C" />
-                    <Label fx:id="climateModeLabel" text="Mode: AUTO (OFF)" />
-                    <HBox alignment="CENTER" spacing="10.0">
-                        <Button onAction="#onTempDown" style="-fx-background-color: #2196F3; -fx-text-fill: white;" text="- Temp" />
-                        <Button onAction="#onTempUp" style="-fx-background-color: #f44336; -fx-text-fill: white;" text="+ Temp" />
-                        <Button fx:id="autoModeButton" onAction="#onToggleAutoClimate" style="-fx-background-color: #4CAF50; -fx-text-fill: white;" text="Auto Mode" />
-                    </HBox>
-                    <HBox alignment="CENTER" spacing="10.0">
-                        <Button onAction="#onModeHeat" style="-fx-background-color: #ff9800; -fx-text-fill: white;" text="Heat" />
-                        <Button onAction="#onModeCool" style="-fx-background-color: #03a9f4; -fx-text-fill: white;" text="Cool" />
-                        <Button onAction="#onModeOff" style="-fx-background-color: #9e9e9e; -fx-text-fill: white;" text="Off" />
-                    </HBox>
-                </VBox>
+                        <!-- Water Pipes Control Card -->
 
-                <!-- Water Pipes Control Card -->
-
-            </GridPane>
-            </StackPane>
-        </VBox>
+                    </GridPane>
+                </StackPane>
+            </VBox>
+        </ScrollPane>
     </center>
 
     <!-- BOTTOM: System Monitor Log -->
     <bottom>
         <VBox style="-fx-padding: 10;">
-            <Label style="-fx-font-weight: bold; -fx-padding: 0 0 5 0;" text="System Monitor Log" />
-            <TextArea fx:id="logArea" editable="false" prefHeight="150.0" style="-fx-font-family: monospace; -fx-background-color: #1e1e1e; -fx-text-fill: #00ff00;" />
+            <Label style="-fx-font-weight: bold; -fx-padding: 0 0 5 0;" text="System Monitor Log"/>
+            <TextArea fx:id="logArea" editable="false" prefHeight="150.0"
+                      style="-fx-font-family: monospace; -fx-background-color: #1e1e1e; -fx-text-fill: #00ff00;"/>
         </VBox>
     </bottom>
 </BorderPane>

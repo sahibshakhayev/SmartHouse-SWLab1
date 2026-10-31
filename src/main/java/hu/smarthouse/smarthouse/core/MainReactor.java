@@ -1,7 +1,6 @@
 package hu.smarthouse.smarthouse.core;
 
 import hu.smarthouse.smarthouse.model.Event;
-import java.util.concurrent.BlockingQueue;
 
 
 public class MainReactor implements Runnable {
@@ -25,7 +24,7 @@ public class MainReactor implements Runnable {
                 Event triggeredEvent = eventPool.take();
 
 
-                System.out.println("MainReactor routing events for component: " + triggeredEvent.getCompID());
+                System.out.println("MainReactor routing events for component: " + triggeredEvent.getCompId());
                 consequencePool.put(triggeredEvent);
 
             } catch (InterruptedException e) {

@@ -13,6 +13,6 @@ import lombok.experimental.Accessors;
 public abstract class SmartUnit {
 
     @NonNull
-    private final String compID;
+    private final String compId;
 
 }

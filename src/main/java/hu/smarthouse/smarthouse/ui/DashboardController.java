@@ -1,6 +1,7 @@
 package hu.smarthouse.smarthouse.ui;
 
 import hu.smarthouse.smarthouse.core.EventPool;
+import hu.smarthouse.smarthouse.devices.MotionSensor;
 import hu.smarthouse.smarthouse.model.Event;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -11,19 +12,30 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.Map;
 import java.util.Objects;
 
+@Setter
+@Getter
 public class DashboardController {
 
-    @FXML private TextArea logArea;
+    @FXML
+    private TextArea logArea;
 
     // Navigation
-    @FXML private Label pageTitle;
-    @FXML private GridPane bathroomView;
-    @FXML private GridPane livingRoomView;
-    @FXML private Button bathroomNavButton;
-    @FXML private Button livingRoomNavButton;
+    @FXML
+    private Label pageTitle;
+    @FXML
+    private GridPane bathroomView;
+    @FXML
+    private GridPane livingRoomView;
+    @FXML
+    private Button bathroomNavButton;
+    @FXML
+    private Button livingRoomNavButton;
 
     private static final String NAV_ACTIVE =
             "-fx-background-color: #4CAF50; -fx-text-fill: white;";
@@ -31,41 +43,76 @@ public class DashboardController {
             "-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;";
 
     // Light Components
-    @FXML private ImageView lightIcon;
-    @FXML private Label lightStatus;
+    @FXML
+    private ImageView lightIcon;
+    @FXML
+    private Label lightStatus;
+    @FXML
+    private ImageView bathRoomPlugIcon;
+    @FXML
+    private Label bathRoomPlugStatus;
 
-    @FXML private Button kitchenNavButton;
-    @FXML private GridPane kitchenView;
-    @FXML private ImageView kitchenLightIcon;
-    @FXML private Label kitchenLightStatus;
+    @FXML
+    private Button kitchenNavButton;
+    @FXML
+    private GridPane kitchenView;
+    @FXML
+    private ImageView kitchenLightIcon;
+    @FXML
+    private Label kitchenLightStatus;
+
+    @FXML
+    private ImageView kitchenPlugIcon;
+    @FXML
+    private Label kitchenPlugStatus;
 
     // Fan Components
-    @FXML private ImageView fanIcon;
-    @FXML private Label fanStatus;
+    @FXML
+    private ImageView fanIcon;
+    @FXML
+    private Label fanStatus;
 
-    @FXML private Label indoorTempLabel;
-    @FXML private Label targetTempLabel;
-    @FXML private Label outdoorTempLabel;
-    @FXML private Label climateModeLabel;
-    @FXML private Button autoModeButton;
+    @FXML
+    private Label indoorTempLabel;
+    @FXML
+    private Label targetTempLabel;
+    @FXML
+    private Label outdoorTempLabel;
+    @FXML
+    private Label climateModeLabel;
+    @FXML
+    private Button autoModeButton;
 
-    @FXML private Label valveStatusLabel;
-    @FXML private Label leakAlertLabel;
+    @FXML
+    private Label valveStatusLabel;
+    @FXML
+    private Label leakAlertLabel;
 
     // Window Components
 
-    @FXML private ImageView windowIcon;
-    @FXML private Label windowStatus;
-    @FXML private Slider shadeSlider;
-    
+    @FXML
+    private ImageView livingRoomLightIcon;
+    @FXML
+    private Label livingRoomLightStatus;
+    @FXML
+    private ImageView windowIcon;
+    @FXML
+    private Label windowStatus;
+    @FXML
+    private Slider shadeSlider;
+
     // Door Components
-    @FXML private ImageView doorIcon;
-    @FXML private Label doorStatus;
+    @FXML
+    private ImageView doorIcon;
+    @FXML
+    private Label doorStatus;
 
     // Settings Components
-    @FXML private Slider fanDelaySlider;
+    @FXML
+    private Slider fanDelaySlider;
 
     private EventPool eventPool;
+    private MotionSensor bathRoomSensor;
 
     // Image assets (Ensure these files are in src/main/resources/assets/)
     private Image imgLightOn;
@@ -77,63 +124,98 @@ public class DashboardController {
     private Image imgDoorOpen;
     private Image imgDoorClosed;
     private Image imgDoorLocked;
+    private Image imgPlugOn;
+    private Image imgPlugOff;
+
+    private Map<String, ImageView> lightIcons;
+    private Map<String, Label> lightLabels;
+    private Map<String, ImageView> plugIcons;
+    private Map<String, Label> plugLabels;
 
     @FXML
     public void initialize() {
+        lightIcons = Map.ofEntries(
+                Map.entry("BATHROOM_LIGHT", lightIcon),
+                Map.entry("KITCHEN_LIGHT", kitchenLightIcon),
+                Map.entry("LIVING_ROOM_LIGHT", livingRoomLightIcon)
+        );
+
+        lightLabels = Map.ofEntries(
+                Map.entry("BATHROOM_LIGHT", lightStatus),
+                Map.entry("KITCHEN_LIGHT", kitchenLightStatus),
+                Map.entry("LIVING_ROOM_LIGHT", livingRoomLightStatus)
+        );
+
+        plugIcons = Map.ofEntries(
+                Map.entry("BATHROOM_PLUG", bathRoomPlugIcon),
+                Map.entry("KITCHEN_PLUG", kitchenPlugIcon)
+        );
+
+        plugLabels = Map.ofEntries(
+                Map.entry("BATHROOM_PLUG", bathRoomPlugStatus),
+                Map.entry("KITCHEN_PLUG", kitchenPlugStatus)
+        );
+
         // Load images on startup. Try-catch blocks ensure the app doesn't crash if images are missing yet.
         try {
             imgLightOn = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/light_on.png")));
             imgLightOff = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/light_off.png")));
             imgFanOn = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/fan_on.gif")));
             imgFanOff = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/fan_off.png")));
-            kitchenLightIcon.setImage(imgLightOff);
             imgWindowOpen = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/window_open.png")));
             imgWindowClosed = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/window_closed.png")));
 
             imgDoorOpen = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/door_open.png")));
             imgDoorClosed = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/door_closed.png")));
             imgDoorLocked = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/door_locked.png")));
+            imgPlugOn = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/plug-on.png")));
+            imgPlugOff = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/hu/smarthouse/smarthouse/assets/plug-off.png")));
 
             // Set initial off states
             lightIcon.setImage(imgLightOff);
+            kitchenLightIcon.setImage(imgLightOff);
+            livingRoomLightIcon.setImage(imgLightOff);
             fanIcon.setImage(imgFanOff);
             windowIcon.setImage(imgWindowOpen);
             doorIcon.setImage(imgDoorOpen);
+            bathRoomPlugIcon.setImage(imgPlugOn);
+            kitchenPlugIcon.setImage(imgPlugOn);
         } catch (NullPointerException e) {
             System.err.println("Warning: UI Assets not found in /assets/ folder.");
         }
     }
 
-    public void setEventPool(EventPool eventPool) {
-        this.eventPool = eventPool;
-    }
-
-    public TextArea getLogArea() {
-        return logArea;
-    }
-
     // --- User Interaction Events ---
 
     @FXML
-    private void onShowBathroom() { showView("BATHROOM"); }
+    private void onShowBathroom() {
+        showView("BATHROOM");
+    }
 
     @FXML
-    private void onShowLivingRoom() { showView("LIVING_ROOM"); }
+    private void onShowLivingRoom() {
+        showView("LIVING_ROOM");
+    }
 
     @FXML
-    private void onShowKitchen() { showView("KITCHEN"); }
+    private void onShowKitchen() {
+        showView("KITCHEN");
+    }
 
     private void showView(String viewName) {
         boolean isBath = viewName.equals("BATHROOM");
         boolean isLiv = viewName.equals("LIVING_ROOM");
         boolean isKitch = viewName.equals("KITCHEN");
 
-        bathroomView.setVisible(isBath); bathroomView.setManaged(isBath);
-        livingRoomView.setVisible(isLiv); livingRoomView.setManaged(isLiv);
-        kitchenView.setVisible(isKitch); kitchenView.setManaged(isKitch);
+        bathroomView.setVisible(isBath);
+        bathroomView.setManaged(isBath);
+        livingRoomView.setVisible(isLiv);
+        livingRoomView.setManaged(isLiv);
+        kitchenView.setVisible(isKitch);
+        kitchenView.setManaged(isKitch);
 
-        if(isBath) pageTitle.setText("Bathroom Dashboard");
-        else if(isLiv) pageTitle.setText("Living Room Dashboard");
+        if (isBath) pageTitle.setText("Bathroom Dashboard");
+        else if (isLiv) pageTitle.setText("Living Room Dashboard");
         else pageTitle.setText("Kitchen Dashboard");
 
         bathroomNavButton.setStyle(isBath ? NAV_ACTIVE : NAV_INACTIVE);
@@ -152,8 +234,13 @@ public class DashboardController {
     }
 
     @FXML
-    private void onMotionDetected() {
-        sendEvent(new Event("SENSOR_TRIGGER", "Motion detected", "BATHROOM_LIGHT"));
+    private void onToggleBathroomPlug() {
+        sendEvent(new Event("TOGGLE", "User toggled bathroom plug", "BATHROOM_PLUG"));
+    }
+
+    @FXML
+    private void onToggleKitchenPlug() {
+        sendEvent(new Event("TOGGLE", "User toggled kitchen plug", "KITCHEN_PLUG"));
     }
 
     @FXML
@@ -166,11 +253,9 @@ public class DashboardController {
         sendEvent(new Event("TOGGLE", "User toggled kitchen light", "KITCHEN_LIGHT"));
     }
 
-    public void updateKitchenLightStatus(boolean isOn) {
-        Platform.runLater(() -> {
-            kitchenLightIcon.setImage(isOn ? imgLightOn : imgLightOff);
-            kitchenLightStatus.setText(isOn ? "Status: ON" : "Status: OFF");
-        });
+    @FXML
+    private void onToggleLivingRoomLight() {
+        sendEvent(new Event("TOGGLE", "User toggled living room light", "LIVING_ROOM_LIGHT"));
     }
 
     @FXML
@@ -182,8 +267,8 @@ public class DashboardController {
 
     @FXML
     private void onPersonEnters() {
+        reportBathRoomMotion(true);
         // Person enters: Turn ON light, Turn OFF fan (if it was running)
-        sendEvent(new Event("TURN_ON", "Person entered bathroom", "BATHROOM_LIGHT"));
         sendEvent(new Event("TURN_OFF", "Person entered bathroom", "BATHROOM_FAN"));
     }
 
@@ -191,12 +276,21 @@ public class DashboardController {
     private void onPersonLeaves() {
         // Get the value from the slider
         int delayMinutes = (int) fanDelaySlider.getValue();
-
+        reportBathRoomMotion(false);
         // Person leaves: Turn OFF light, Turn ON fan with timer
-        sendEvent(new Event("TURN_OFF", "Person left bathroom", "BATHROOM_LIGHT"));
         sendEvent(new Event("TURN_ON_TIMER", String.valueOf(delayMinutes), "BATHROOM_FAN"));
     }
 
+
+    @FXML
+    private void onMotionDetected() {
+        reportBathRoomMotion(true);
+    }
+
+    @FXML
+    private void onNoMotion() {
+        reportBathRoomMotion(false);
+    }
 
     // --- Thermostat Interactions ---
 
@@ -280,13 +374,6 @@ public class DashboardController {
         });
     }
 
-
-
-
-
-
-
-
     // --- Window ---
 
     @FXML
@@ -348,12 +435,20 @@ public class DashboardController {
         }
     }
 
+    private void reportBathRoomMotion(boolean present) {
+        bathRoomSensor.setMotion(present);
+        sendEvent(bathRoomSensor.sense());   // publishes MOTION_DETECTED / MOTION_CLEARED once
+    }
+
     // --- Callbacks for Background Reactors (Thread-Safe UI Updates) ---
 
-    public void updateLightStatus(boolean isOn) {
+    public void updateLightStatus(String compId, boolean isOn) {
         Platform.runLater(() -> {
-            lightIcon.setImage(isOn ? imgLightOn : imgLightOff);
-            lightStatus.setText(isOn ? "Status: ON" : "Status: OFF");
+            ImageView icon = lightIcons.get(compId);
+            Label label = lightLabels.get(compId);
+            if (icon == null || label == null) return;   // неизвестный id: ничего не ломаем
+            icon.setImage(isOn ? imgLightOn : imgLightOff);
+            label.setText(isOn ? "Status: ON" : "Status: OFF");
         });
     }
 
@@ -375,8 +470,6 @@ public class DashboardController {
         });
     }
 
-
-
     public void updateWindowStatus(boolean isOpen, int shadeLevel) {
         Platform.runLater(() -> {
             if (imgWindowOpen != null && imgWindowClosed != null) {
@@ -394,8 +487,14 @@ public class DashboardController {
         });
     }
 
-
-
-
+    public void updatePlugStatus(String compId, boolean isOn, int watts) {
+        Platform.runLater(() -> {
+            ImageView icon = plugIcons.get(compId);
+            Label status = plugLabels.get(compId);
+            if (icon == null || status == null) return;   // неизвестный id: ничего не ломаем
+            icon.setImage(isOn ? imgPlugOn : imgPlugOff);
+            status.setText(isOn ? "ON | " + watts + " W" : "OFF | 0 W");
+        });
+    }
 
 }

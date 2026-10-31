@@ -3,8 +3,10 @@ package hu.smarthouse.smarthouse.model;
 import lombok.*;
 import lombok.experimental.Accessors;
 
+import java.sql.Timestamp;
+
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Accessors(chain = true)
 @ToString
 public final class Event {
@@ -14,6 +16,7 @@ public final class Event {
     @NonNull
     private final String message;
     @NonNull
-    private final String compID;
+    private final String compId;
+    private final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
 }

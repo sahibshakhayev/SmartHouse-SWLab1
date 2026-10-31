@@ -29,8 +29,8 @@ public class Monitor implements Runnable {
                 // take() waits until the EventPool puts a copy of the event here
                 Event event = monitorFeed.take();
 
-                String logMessage = String.format("[LOG] Component: %s | Type: %s | Message: %s\n",
-                        event.getCompID(), event.getType(), event.getMessage());
+                String logMessage = String.format("%1$TD %1$TT [LOG] Component: %2$s | Type: %3$s | Message: %4$s\n",
+                        event.getTimestamp(), event.getCompId(), event.getType(), event.getMessage());
 
                 Platform.runLater(() -> logArea.appendText(logMessage));
 

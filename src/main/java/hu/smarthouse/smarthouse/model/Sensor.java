@@ -2,8 +2,8 @@ package hu.smarthouse.smarthouse.model;
 
 public abstract class Sensor extends SmartUnit {
 
-    protected Sensor(String compID) {
-        super(compID);
+    protected Sensor(String compId) {
+        super(compId);
     }
 
     /**
@@ -13,7 +13,7 @@ public abstract class Sensor extends SmartUnit {
     public abstract Event sense();
 
     protected final Event createEvent(String type, String message) {
-        return new Event(type, message, getCompID());
+        return new Event(type, message, getCompId());
     }
 
 }

@@ -14,7 +14,7 @@ public class ConsequencePool {
     }
 
     public void put(Event consequence) throws InterruptedException {
-        queueFor(consequence.getCompID()).put(consequence);
+        queueFor(consequence.getCompId()).put(consequence);
     }
 
     public Event take(String componentId) throws InterruptedException {

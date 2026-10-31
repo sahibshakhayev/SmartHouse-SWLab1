@@ -4,16 +4,16 @@ import lombok.NonNull;
 
 public abstract class Actuator extends SmartUnit {
 
-    protected Actuator(String compID) {
-        super(compID);
+    protected Actuator(String compId) {
+        super(compId);
     }
 
     public final void execute(@NonNull Event event) {
 
-        if (!getCompID().equals(event.getCompID())) {
+        if (!getCompId().equals(event.getCompId())) {
             throw new IllegalArgumentException(
-                    "Event targets " + event.getCompID()
-                            + ", but this actuator is " + getCompID()
+                    "Event targets " + event.getCompId()
+                            + ", but this actuator is " + getCompId()
             );
         }
 
