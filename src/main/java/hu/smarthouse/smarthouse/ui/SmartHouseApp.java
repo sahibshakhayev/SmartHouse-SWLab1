@@ -68,11 +68,11 @@ public class SmartHouseApp extends Application {
 
         fanReactor = new FanReactor(consequencePool, controller);
 
-        thermostatReactor = new ThermostatReactor(consequencePool, controller);
+        thermostatReactor = new ThermostatReactor(consequencePool, controller, eventPool);
         waterReactor = new WaterReactor(consequencePool, controller);
 
         livingRoomLightReactor = new LightReactor("LIVING_ROOM_LIGHT", consequencePool, eventPool, controller);
-        livingRoomWindowReactor = new WindowReactor("LIVING_ROOM_WINDOW", consequencePool, controller);
+        livingRoomWindowReactor = new WindowReactor("LIVING_ROOM_WINDOW", eventPool, consequencePool, controller);
         livingRoomDoorReactor = new DoorReactor("FRONT_DOOR", consequencePool, controller);
 
 

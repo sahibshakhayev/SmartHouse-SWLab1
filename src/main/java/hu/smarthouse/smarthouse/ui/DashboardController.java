@@ -258,6 +258,17 @@ public class DashboardController {
         sendEvent(new Event("TOGGLE", "User toggled living room light", "LIVING_ROOM_LIGHT"));
     }
 
+
+    @FXML
+    private void onSimulateSunset() {
+
+        sendEvent(new Event("DARKNESS_DETECTED", "User triggered manual sunset simulation", "LIVING_ROOM_WINDOW"));
+
+        Platform.runLater(() -> {
+            getLogArea().appendText("[LOG] Component: UI | Type: MANUAL_OVERRIDE | Message: Sunset simulated manually\n");
+        });
+    }
+
     @FXML
     private void onSaveSettings() {
         int delayValue = (int) fanDelaySlider.getValue();

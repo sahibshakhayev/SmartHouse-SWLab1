@@ -30,6 +30,13 @@ public class ThermostatActuator extends Actuator {
                 if (targetTemp > 15.0) targetTemp -= 1.0;
                 else System.out.println("[Thermostat] Min limit reached (15°C)");
             }
+            case "RESTORE_DEFAULT_TEMP" -> {
+                this.targetTemp = 20.0;
+                this.mode = "HEATING";
+                this.autoMode = true;
+                System.out.println("[Taskflow] Auto-restoring default temperature to 20°C");
+            }
+
             case "OUTDOOR_TEMP_UPDATE" -> outdoorTemp = Double.parseDouble(event.getMessage());
             case "INTERNAL_SET_MODE" -> mode = event.getMessage();
             default -> throw new IllegalArgumentException(

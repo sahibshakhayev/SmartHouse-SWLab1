@@ -18,8 +18,8 @@ public class WindowActuator extends Actuator {
         switch (event.getType()) {
             case "OPEN" -> open = true;
             case "CLOSE" -> open = false;
-            case "SHADE_UP" -> shadeLevel = shadeLevel < 100 ? shadeLevel + 1 : shadeLevel;
-            case "SHADE_DOWN" -> shadeLevel = shadeLevel > 0 ? shadeLevel - 1 : shadeLevel;
+            case "SHADE_UP" -> shadeLevel = shadeLevel >= 1 ? shadeLevel - 1 : shadeLevel;
+            case "SHADE_DOWN" -> shadeLevel = shadeLevel < 100 ? shadeLevel + 1 : shadeLevel;
             case "SHADE_SET" -> shadeLevel = Math.max(0, Math.min(100, Integer.parseInt(event.getMessage())));
             default -> throw new IllegalArgumentException(
                     "Window does not support event type: " + event.getType());

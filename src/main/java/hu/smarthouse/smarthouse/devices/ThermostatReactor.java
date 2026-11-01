@@ -3,6 +3,7 @@ package hu.smarthouse.smarthouse.devices;
 import hu.smarthouse.smarthouse.core.BaseReactor;
 import hu.smarthouse.smarthouse.core.ConsequencePool;
 import hu.smarthouse.smarthouse.model.Event;
+import hu.smarthouse.smarthouse.core.EventPool;
 import hu.smarthouse.smarthouse.ui.DashboardController;
 import org.json.JSONObject;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -18,19 +19,21 @@ import java.util.concurrent.TimeUnit;
 public class ThermostatReactor extends BaseReactor {
     private final ThermostatActuator thermostat = new ThermostatActuator("LIVING_ROOM_THERMOSTAT");
     private final DashboardController controller;
+    private final EventPool eventPool;
     private final ScheduledExecutorService backgroundTasks = Executors.newScheduledThreadPool(2);
     private final HttpClient httpClient;
 
     private final String apiKey;
     private static final String CITY = "Budapest";
-    public ThermostatReactor(ConsequencePool pool, DashboardController controller) {
+    public ThermostatReactor(ConsequencePool pool, DashboardController controller, EventPool eventPool) {
         super("LIVING_ROOM_THERMOSTAT", pool);
         this.controller = controller;
+        this.eventPool = eventPool;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
 
-        // Безопасная загрузка ключа из .env файла
+
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
         this.apiKey = dotenv.get("OPENWEATHER_API_KEY");
 
@@ -45,7 +48,16 @@ public class ThermostatReactor extends BaseReactor {
     @Override
     public void react(Event event) {
         try {
-            thermostat.execute(event);
+            if ("LOW_TEMPERATURE".equals(event.getType())) {
+
+                if ("HEATING".equals(thermostat.getMode())) {
+                    thermostat.execute(new Event("RESTORE_DEFAULT_TEMP", "Emergency heating triggered", "LIVING_ROOM_THERMOSTAT"));
+                } else {
+                    System.out.println("[Thermostat] LOW_TEMPERATURE event ignored: System is not in HEATING mode.");
+                }
+            } else {
+                thermostat.execute(event);
+            }
             updateUI();
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("[Thermostat] rejected: " + e.getMessage());
@@ -56,6 +68,16 @@ public class ThermostatReactor extends BaseReactor {
         // Fast loop: runs every 2 seconds for smooth UI simulation
         backgroundTasks.scheduleAtFixedRate(() -> {
             boolean changed = thermostat.simulateAmbientFluctuation();
+
+            if (thermostat.getCurrentTemp() < 20.0
+                    && thermostat.getTargetTemp() < 20.0
+                    && "HEATING".equals(thermostat.getMode())) {
+                try {
+                    eventPool.put(new Event("LOW_TEMPERATURE", "Temperature dropped below 20C threshold", "LIVING_ROOM_THERMOSTAT"));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
 
             if (thermostat.isAutoMode()) {
                 String desiredMode = "OFF";
@@ -83,7 +105,7 @@ public class ThermostatReactor extends BaseReactor {
             if (apiKey == null || apiKey.isEmpty()) return; // Защита от пустых запросов
 
             try {
-                // Динамически собираем URL с нашим ключом
+
                 String weatherApiUrl = "https://api.openweathermap.org/data/2.5/weather?q=" + CITY + "&units=metric&appid=" + apiKey;
                 System.out.println("[Weather API] Fetching current outdoor temperature for " + CITY + "...");
 
@@ -97,6 +119,14 @@ public class ThermostatReactor extends BaseReactor {
                 if (response.statusCode() == 200) {
                     JSONObject json = new JSONObject(response.body());
                     double realTemp = json.getJSONObject("main").getDouble("temp");
+                    long currentTime = json.getLong("dt");
+                    long sunsetTime = json.getJSONObject("sys").getLong("sunset");
+
+                    if (currentTime >= sunsetTime) {
+                        eventPool.put(new Event("DARKNESS_DETECTED", "Sun has set according to API", "LIVING_ROOM_WINDOW"));
+                    }
+
+
 
 
                     String successLog = String.format("[LOG] Component: WEATHER_API | Type: FETCH_SUCCESS | Message: Outdoor temp updated to %.1f°C\n", realTemp);
