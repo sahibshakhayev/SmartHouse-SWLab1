@@ -35,6 +35,7 @@ public class SmartHouseApp extends Application {
     private MotionReactor bathRoomMotionReactor;
     private PlugReactor bathRoomPlugReactor;
     private MotionSensor bathRoomMotionSensor;
+    private BoilerReactor boilerReactor;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -70,8 +71,8 @@ public class SmartHouseApp extends Application {
         fanReactor = new FanReactor(consequencePool, controller);
 
         thermostatReactor = new ThermostatReactor(consequencePool, controller, eventPool);
-        waterReactor = new WaterReactor(consequencePool, controller);
-
+        waterReactor = new WaterReactor(consequencePool, eventPool, controller);
+        boilerReactor = new BoilerReactor(consequencePool, eventPool,controller);
         livingRoomLightReactor = new LightReactor("LIVING_ROOM_LIGHT", consequencePool, eventPool, controller);
         livingRoomWindowReactor = new WindowReactor("LIVING_ROOM_WINDOW", eventPool, consequencePool, controller);
         livingRoomDoorReactor = new DoorReactor("FRONT_DOOR", consequencePool, controller);
@@ -88,6 +89,7 @@ public class SmartHouseApp extends Application {
         threadPool.execute(breakerReactor);
         threadPool.execute(thermostatReactor);
         threadPool.execute(waterReactor);
+        threadPool.execute(boilerReactor);
         threadPool.execute(livingRoomWindowReactor);
         threadPool.execute(livingRoomDoorReactor);
         threadPool.execute(livingRoomLightReactor);
@@ -107,6 +109,7 @@ public class SmartHouseApp extends Application {
         if (fanReactor != null) fanReactor.stop();
         if (thermostatReactor != null) thermostatReactor.stop();
         if (waterReactor != null) waterReactor.stop();
+        if (boilerReactor != null) boilerReactor.stop();
         if (livingRoomWindowReactor != null) livingRoomWindowReactor.stop();
         if (kitchenPlugReactor != null) kitchenPlugReactor.stop();
         if (bathRoomMotionReactor != null) bathRoomMotionReactor.stop();

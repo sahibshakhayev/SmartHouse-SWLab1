@@ -103,6 +103,11 @@ public class DashboardController {
     private Button autoModeButton;
 
 
+    @FXML private Label boilerTempLabel;
+    @FXML private Label boilerPowerLabel;
+    @FXML private Label boilerSafetyLabel;
+
+
 
     @FXML
     private Label valveStatusLabel;
@@ -225,6 +230,22 @@ public class DashboardController {
 
     @FXML
     private void onCorridorClicked() { showView("CORRIDOR");
+    }
+
+
+    @FXML
+    private void onBoilerModeOff() {
+        sendEvent(new Event("SET_BOILER_MODE", "OFF", "BATHROOM_BOILER"));
+    }
+
+    @FXML
+    private void onBoilerModeEco() {
+        sendEvent(new Event("SET_BOILER_MODE", "ECO", "BATHROOM_BOILER"));
+    }
+
+    @FXML
+    private void onBoilerModeBoost() {
+        sendEvent(new Event("SET_BOILER_MODE", "BOOST", "BATHROOM_BOILER"));
     }
 
     private void showView(String viewName) {
@@ -540,6 +561,22 @@ public class DashboardController {
     private void reportBathRoomMotion(boolean present) {
         bathRoomSensor.setMotion(present);
         sendEvent(bathRoomSensor.sense());   // publishes MOTION_DETECTED / MOTION_CLEARED once
+    }
+
+
+    public void updateBoilerStatus(String mode, double currentTemp, double targetTemp, double powerKw, boolean waterOk) {
+        Platform.runLater(() -> {
+            boilerTempLabel.setText(String.format("%.1f °C", currentTemp));
+            boilerPowerLabel.setText(String.format("%.2f kW", powerKw));
+
+            if (!waterOk) {
+                boilerSafetyLabel.setText("⚠️ DRY-RUN LOCKOUT (No Water)");
+                boilerSafetyLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-weight: bold;");
+            } else {
+                boilerSafetyLabel.setText("● Water: OK");
+                boilerSafetyLabel.setStyle("-fx-text-fill: #2ecc71; -fx-font-weight: bold;");
+            }
+        });
     }
 
     // --- Callbacks for Background Reactors (Thread-Safe UI Updates) ---
