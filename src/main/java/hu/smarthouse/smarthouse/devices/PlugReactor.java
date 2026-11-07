@@ -32,8 +32,11 @@ public class PlugReactor extends BaseReactor {
         }
 
         controller.updatePlugStatus(getComponentId(), plug.isOn(), plug.getPowerDraw());
+        String lineName = getPowerLine();
+        double loadKw = plug.isOn() ? (plug.getPowerDraw() / 1000.0) : 0.0;
 
         try {
+            eventPool.put(new Event("UPDATE_LINE_LOAD", lineName + ":" + loadKw, "MAIN_POWER_BREAKER"));
             eventPool.put(new Event(Protocol.PLUG_STATUS,
                     Protocol.encode("state", plug.isOn() ? "ON" : "OFF",
                             "watts", String.valueOf(plug.getPowerDraw())),
@@ -41,5 +44,16 @@ public class PlugReactor extends BaseReactor {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+
+
+    }
+    private String getPowerLine() {
+        String compId = getComponentId();
+        if (compId != null && compId.contains("KITCHEN")) {
+            return "KITCHEN_LINE";
+        } else if (compId != null && compId.contains("BATHROOM")) {
+            return "BATHROOM_LINE";
+        }
+        return "LIVING_ROOM_LINE";
     }
 }

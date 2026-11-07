@@ -5,10 +5,7 @@ import hu.smarthouse.smarthouse.devices.MotionSensor;
 import hu.smarthouse.smarthouse.model.Event;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.Slider;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -32,15 +29,37 @@ public class DashboardController {
     private GridPane bathroomView;
     @FXML
     private GridPane livingRoomView;
+
+    @FXML
+    private GridPane corridorView;
     @FXML
     private Button bathroomNavButton;
     @FXML
     private Button livingRoomNavButton;
 
+    @FXML
+    private Button corridorNavButton;
+
     private static final String NAV_ACTIVE =
             "-fx-background-color: #4CAF50; -fx-text-fill: white;";
     private static final String NAV_INACTIVE =
             "-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;";
+
+
+    @FXML private ToggleButton mainBreakerToggle;
+    @FXML private CheckBox kitchenLineCheck;
+    @FXML private CheckBox bathroomLineCheck;
+    @FXML private CheckBox livingRoomLineCheck;
+    @FXML private Label totalPowerLabel;
+    @FXML private ProgressBar powerLoadBar;
+
+
+
+
+
+
+
+
 
     // Light Components
     @FXML
@@ -82,6 +101,8 @@ public class DashboardController {
     private Label climateModeLabel;
     @FXML
     private Button autoModeButton;
+
+
 
     @FXML
     private Label valveStatusLabel;
@@ -202,10 +223,15 @@ public class DashboardController {
         showView("KITCHEN");
     }
 
+    @FXML
+    private void onCorridorClicked() { showView("CORRIDOR");
+    }
+
     private void showView(String viewName) {
         boolean isBath = viewName.equals("BATHROOM");
         boolean isLiv = viewName.equals("LIVING_ROOM");
         boolean isKitch = viewName.equals("KITCHEN");
+        boolean isCorridor = viewName.equals("CORRIDOR");
 
         bathroomView.setVisible(isBath);
         bathroomView.setManaged(isBath);
@@ -213,14 +239,19 @@ public class DashboardController {
         livingRoomView.setManaged(isLiv);
         kitchenView.setVisible(isKitch);
         kitchenView.setManaged(isKitch);
+        corridorView.setVisible(isCorridor);
+        corridorView.setManaged(isCorridor);
 
         if (isBath) pageTitle.setText("Bathroom Dashboard");
         else if (isLiv) pageTitle.setText("Living Room Dashboard");
-        else pageTitle.setText("Kitchen Dashboard");
+        else if (isCorridor) {
+            pageTitle.setText("Corridor Dashboard");
+        } else pageTitle.setText("Kitchen Dashboard");
 
         bathroomNavButton.setStyle(isBath ? NAV_ACTIVE : NAV_INACTIVE);
         livingRoomNavButton.setStyle(isLiv ? NAV_ACTIVE : NAV_INACTIVE);
         kitchenNavButton.setStyle(isKitch ? NAV_ACTIVE : NAV_INACTIVE);
+        corridorNavButton.setStyle(isCorridor ? NAV_ACTIVE : NAV_INACTIVE);
     }
 
     @FXML
@@ -257,6 +288,66 @@ public class DashboardController {
     private void onToggleLivingRoomLight() {
         sendEvent(new Event("TOGGLE", "User toggled living room light", "LIVING_ROOM_LIGHT"));
     }
+
+
+    @FXML
+    private void onToggleMainBreaker() {
+        boolean isOn = mainBreakerToggle.isSelected();
+        sendEvent(new Event("TOGGLE_MAIN", String.valueOf(isOn), "MAIN_POWER_BREAKER"));
+    }
+
+    @FXML
+    private void onToggleKitchenLine() {
+        boolean isOn = kitchenLineCheck.isSelected();
+        sendEvent(new Event("TOGGLE_LINE", "KITCHEN_LINE:" + isOn, "MAIN_POWER_BREAKER"));
+    }
+
+    @FXML
+    private void onToggleBathroomLine() {
+        boolean isOn = bathroomLineCheck.isSelected();
+        sendEvent(new Event("TOGGLE_LINE", "BATHROOM_LINE:" + isOn, "MAIN_POWER_BREAKER"));
+    }
+
+    @FXML
+    private void onToggleLivingRoomLine() {
+        boolean isOn = livingRoomLineCheck.isSelected();
+        sendEvent(new Event("TOGGLE_LINE", "LIVING_ROOM_LINE:" + isOn, "MAIN_POWER_BREAKER"));
+    }
+
+    public void updatePowerBreakerStatus(boolean mainOn, double totalKw, Map<String, Boolean> lines, Map<String, Double> loads) {
+        Platform.runLater(() -> {
+            mainBreakerToggle.setSelected(mainOn);
+            mainBreakerToggle.setText(mainOn ? "MAIN POWER: ON" : "MAIN POWER: OFF");
+
+            kitchenLineCheck.setSelected(lines.getOrDefault("KITCHEN_LINE", false));
+            bathroomLineCheck.setSelected(lines.getOrDefault("BATHROOM_LINE", false));
+            livingRoomLineCheck.setSelected(lines.getOrDefault("LIVING_ROOM_LINE", false));
+
+            totalPowerLabel.setText(String.format("%.2f kW / 5.00 kW", totalKw));
+
+            double progress = totalKw / 5.0;
+            powerLoadBar.setProgress(Math.min(progress, 1.0));
+
+            if (progress > 0.9) {
+                powerLoadBar.setStyle("-fx-accent: #e74c3c;"); // Красный цвет при опасности перегрузки
+            } else if (progress > 0.7) {
+                powerLoadBar.setStyle("-fx-accent: #f39c12;"); // Оранжевый
+            } else {
+                powerLoadBar.setStyle("-fx-accent: #2ecc71;"); // Зеленый
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
     @FXML

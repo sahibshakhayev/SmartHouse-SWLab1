@@ -48,19 +48,33 @@ public class ThermostatReactor extends BaseReactor {
     @Override
     public void react(Event event) {
         try {
+
+            if ("TURN_OFF".equals(event.getType())) {
+                thermostat.execute(new Event("MODE_OFF", "OFF", "LIVING_ROOM_THERMOSTAT"));
+                eventPool.put(new Event("UPDATE_LINE_LOAD", "LIVING_ROOM_LINE:0.0", "MAIN_POWER_BREAKER"));
+                updateUI();
+                return;
+            }
             if ("LOW_TEMPERATURE".equals(event.getType())) {
 
                 if ("HEATING".equals(thermostat.getMode())) {
                     thermostat.execute(new Event("RESTORE_DEFAULT_TEMP", "Emergency heating triggered", "LIVING_ROOM_THERMOSTAT"));
+                    eventPool.put(new Event("UPDATE_LINE_LOAD", "LIVING_ROOM_LINE:1.5", "MAIN_POWER_BREAKER"));
                 } else {
                     System.out.println("[Thermostat] LOW_TEMPERATURE event ignored: System is not in HEATING mode.");
+                    eventPool.put(new Event("UPDATE_LINE_LOAD", "LIVING_ROOM_LINE:0.0", "MAIN_POWER_BREAKER"));
                 }
             } else {
                 thermostat.execute(event);
             }
+
+            double loadKw = "HEATING".equals(thermostat.getMode()) ? 1.5 : 0.0;
+            eventPool.put(new Event("UPDATE_LINE_LOAD", "LIVING_ROOM_LINE:" + loadKw, "MAIN_POWER_BREAKER"));
             updateUI();
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("[Thermostat] rejected: " + e.getMessage());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

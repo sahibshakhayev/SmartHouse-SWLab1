@@ -30,6 +30,7 @@ public class SmartHouseApp extends Application {
     private WaterReactor waterReactor;
     private WindowReactor livingRoomWindowReactor;
     private DoorReactor livingRoomDoorReactor;
+    private PowerBreakerReactor breakerReactor;
     private PlugReactor kitchenPlugReactor;
     private MotionReactor bathRoomMotionReactor;
     private PlugReactor bathRoomPlugReactor;
@@ -74,8 +75,7 @@ public class SmartHouseApp extends Application {
         livingRoomLightReactor = new LightReactor("LIVING_ROOM_LIGHT", consequencePool, eventPool, controller);
         livingRoomWindowReactor = new WindowReactor("LIVING_ROOM_WINDOW", eventPool, consequencePool, controller);
         livingRoomDoorReactor = new DoorReactor("FRONT_DOOR", consequencePool, controller);
-
-
+        breakerReactor = new PowerBreakerReactor(eventPool, consequencePool, controller);
         threadPool = Executors.newFixedThreadPool(16);
         threadPool.execute(mainReactor);
         threadPool.execute(systemMonitor);
@@ -85,6 +85,7 @@ public class SmartHouseApp extends Application {
         threadPool.execute(kitchenLightReactor);
         threadPool.execute(kitchenPlugReactor);
         threadPool.execute(fanReactor);
+        threadPool.execute(breakerReactor);
         threadPool.execute(thermostatReactor);
         threadPool.execute(waterReactor);
         threadPool.execute(livingRoomWindowReactor);
@@ -110,6 +111,7 @@ public class SmartHouseApp extends Application {
         if (kitchenPlugReactor != null) kitchenPlugReactor.stop();
         if (bathRoomMotionReactor != null) bathRoomMotionReactor.stop();
         if (livingRoomDoorReactor != null) livingRoomDoorReactor.stop();
+        if (breakerReactor != null) breakerReactor.stop();
         if (livingRoomLightReactor != null) livingRoomLightReactor.stop();
         if (threadPool != null) threadPool.shutdownNow();
     }

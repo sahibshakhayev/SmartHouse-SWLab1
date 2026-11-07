@@ -25,6 +25,16 @@ public class LightReactor extends BaseReactor {
 
         try {
             light.execute(event);
+            double load = light.isOn() ? 0.1 : 0.0;
+            String lineName = getComponentId().contains("KITCHEN") ? "KITCHEN_LINE" :
+                    getComponentId().contains("BATHROOM") ? "BATHROOM_LINE" : "LIVING_ROOM_LINE";
+
+            try {
+                eventPool.put(new Event("UPDATE_LINE_LOAD", lineName + ":" + load, "MAIN_POWER_BREAKER"));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println("[" + getComponentId() + "] rejected: " + e.getMessage());
             return;

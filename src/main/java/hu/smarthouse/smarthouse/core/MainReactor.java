@@ -22,7 +22,12 @@ public class MainReactor implements Runnable {
             try {
 
                 Event triggeredEvent = eventPool.take();
-
+                if ("UPDATE_LINE_LOAD".equals(triggeredEvent.getType()) || "TOGGLE_LINE".equals(triggeredEvent.getType())) {
+                    System.out.println("MainReactor routing power event [" + triggeredEvent.getType() + "] to MAIN_POWER_BREAKER");
+                    Event breakerEvent = new Event(triggeredEvent.getType(), triggeredEvent.getMessage(), "MAIN_POWER_BREAKER");
+                    consequencePool.put(breakerEvent);
+                    continue;
+                }
 
                 System.out.println("MainReactor routing events for component: " + triggeredEvent.getCompId());
                 consequencePool.put(triggeredEvent);
