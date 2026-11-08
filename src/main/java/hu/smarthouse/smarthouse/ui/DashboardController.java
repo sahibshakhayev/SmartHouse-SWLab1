@@ -1,6 +1,7 @@
 package hu.smarthouse.smarthouse.ui;
 
 import hu.smarthouse.smarthouse.core.EventPool;
+import hu.smarthouse.smarthouse.core.Priority;
 import hu.smarthouse.smarthouse.devices.MotionSensor;
 import hu.smarthouse.smarthouse.model.Event;
 import javafx.application.Platform;
@@ -46,19 +47,18 @@ public class DashboardController {
             "-fx-background-color: transparent; -fx-text-fill: #b3b3b3; -fx-border-color: #b3b3b3; -fx-border-radius: 3;";
 
 
-    @FXML private ToggleButton mainBreakerToggle;
-    @FXML private CheckBox kitchenLineCheck;
-    @FXML private CheckBox bathroomLineCheck;
-    @FXML private CheckBox livingRoomLineCheck;
-    @FXML private Label totalPowerLabel;
-    @FXML private ProgressBar powerLoadBar;
-
-
-
-
-
-
-
+    @FXML
+    private ToggleButton mainBreakerToggle;
+    @FXML
+    private CheckBox kitchenLineCheck;
+    @FXML
+    private CheckBox bathroomLineCheck;
+    @FXML
+    private CheckBox livingRoomLineCheck;
+    @FXML
+    private Label totalPowerLabel;
+    @FXML
+    private ProgressBar powerLoadBar;
 
 
     // Light Components
@@ -103,10 +103,12 @@ public class DashboardController {
     private Button autoModeButton;
 
 
-    @FXML private Label boilerTempLabel;
-    @FXML private Label boilerPowerLabel;
-    @FXML private Label boilerSafetyLabel;
-
+    @FXML
+    private Label boilerTempLabel;
+    @FXML
+    private Label boilerPowerLabel;
+    @FXML
+    private Label boilerSafetyLabel;
 
 
     @FXML
@@ -229,7 +231,8 @@ public class DashboardController {
     }
 
     @FXML
-    private void onCorridorClicked() { showView("CORRIDOR");
+    private void onCorridorClicked() {
+        showView("CORRIDOR");
     }
 
 
@@ -297,7 +300,7 @@ public class DashboardController {
 
     @FXML
     private void onPresenceDetected() {
-        sendEvent(new Event("SENSOR_TRIGGER", "Presence detected", "BATHROOM_FAN"));
+        sendSensorInput(new Event("SENSOR_TRIGGER", "Presence detected", "BATHROOM_FAN"));
     }
 
     @FXML
@@ -360,21 +363,9 @@ public class DashboardController {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
     @FXML
     private void onSimulateSunset() {
-
-        sendEvent(new Event("DARKNESS_DETECTED", "User triggered manual sunset simulation", "LIVING_ROOM_WINDOW"));
+        sendSensorInput(new Event("DARKNESS_DETECTED", "User triggered manual sunset simulation", "LIVING_ROOM_WINDOW"));
 
         Platform.runLater(() -> {
             getLogArea().appendText("[LOG] Component: UI | Type: MANUAL_OVERRIDE | Message: Sunset simulated manually\n");
@@ -461,12 +452,32 @@ public class DashboardController {
 
     @FXML
     private void onTriggerLeak() {
-        sendEvent(new Event("TRIGGER_LEAK", "Critical leak detected by sensor", "HOUSE_WATER_PIPES"));
+        sendSensorInput(new Event("TRIGGER_LEAK", "Critical leak detected by sensor", "HOUSE_WATER_PIPES"));
     }
 
     @FXML
     private void onResolveLeak() {
         sendEvent(new Event("RESOLVE_LEAK", "Leak resolved manually", "HOUSE_WATER_PIPES"));
+    }
+
+    @FXML
+    private void onSceneHome() {
+        sendEvent(new Event("SCENE_SET", "HOME", "HOUSE_SCENES"));
+    }
+
+    @FXML
+    private void onSceneAway() {
+        sendEvent(new Event("SCENE_SET", "AWAY", "HOUSE_SCENES"));
+    }
+
+    @FXML
+    private void onSceneNight() {
+        sendEvent(new Event("SCENE_SET", "NIGHT", "HOUSE_SCENES"));
+    }
+
+    @FXML
+    private void onSceneEco() {
+        sendEvent(new Event("SCENE_SET", "ECO", "HOUSE_SCENES"));
     }
 
     public void updateThermostatStatus(double currentTemp, double targetTemp, double outdoorTemp, String mode, boolean isAuto) {
@@ -549,6 +560,14 @@ public class DashboardController {
     }
 
     private void sendEvent(Event event) {
+        publish(event.withPriority(Priority.USER_OVERRIDE));
+    }
+
+    private void sendSensorInput(Event event) {
+        publish(event);
+    }
+
+    private void publish(Event event) {
         if (eventPool != null) {
             try {
                 eventPool.put(event);
@@ -560,9 +579,8 @@ public class DashboardController {
 
     private void reportBathRoomMotion(boolean present) {
         bathRoomSensor.setMotion(present);
-        sendEvent(bathRoomSensor.sense());   // publishes MOTION_DETECTED / MOTION_CLEARED once
+        sendSensorInput(bathRoomSensor.sense());   // publishes MOTION_DETECTED / MOTION_CLEARED once
     }
-
 
     public void updateBoilerStatus(String mode, double currentTemp, double targetTemp, double powerKw, boolean waterOk) {
         Platform.runLater(() -> {
