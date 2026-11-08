@@ -36,6 +36,7 @@ public class SmartHouseApp extends Application {
     private PlugReactor bathRoomPlugReactor;
     private MotionSensor bathRoomMotionSensor;
     private BoilerReactor boilerReactor;
+    private SceneReactor sceneReactor;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -77,7 +78,8 @@ public class SmartHouseApp extends Application {
         livingRoomWindowReactor = new WindowReactor("LIVING_ROOM_WINDOW", eventPool, consequencePool, controller);
         livingRoomDoorReactor = new DoorReactor("FRONT_DOOR", consequencePool, controller);
         breakerReactor = new PowerBreakerReactor(eventPool, consequencePool, controller);
-        threadPool = Executors.newFixedThreadPool(16);
+        sceneReactor = new SceneReactor(consequencePool, eventPool);
+        threadPool = Executors.newFixedThreadPool(24);
         threadPool.execute(mainReactor);
         threadPool.execute(systemMonitor);
         threadPool.execute(bathRoomlightReactor);
@@ -93,6 +95,7 @@ public class SmartHouseApp extends Application {
         threadPool.execute(livingRoomWindowReactor);
         threadPool.execute(livingRoomDoorReactor);
         threadPool.execute(livingRoomLightReactor);
+        threadPool.execute(sceneReactor);
 
         primaryStage.setTitle("Smart Bathroom Control");
         primaryStage.setScene(new Scene(root, 950, 650));
@@ -116,6 +119,7 @@ public class SmartHouseApp extends Application {
         if (livingRoomDoorReactor != null) livingRoomDoorReactor.stop();
         if (breakerReactor != null) breakerReactor.stop();
         if (livingRoomLightReactor != null) livingRoomLightReactor.stop();
+        if (sceneReactor != null) sceneReactor.stop();
         if (threadPool != null) threadPool.shutdownNow();
     }
 

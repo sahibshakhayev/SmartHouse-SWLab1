@@ -14,8 +14,7 @@ public class WindowActuator extends Actuator {
 
     @Override
     protected synchronized void performAction(Event event) {
-        System.out.println("Window Actuator: " + event.getMessage());
-        switch (event.getType()) {
+        System.out.println("Window Actuator: " + event.getType() + " (" + event.getMessage() + ")");        switch (event.getType()) {
             case "OPEN" -> open = true;
             case "CLOSE" -> open = false;
             case "SHADE_UP" -> shadeLevel = shadeLevel >= 1 ? shadeLevel - 1 : shadeLevel;
