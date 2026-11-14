@@ -7,7 +7,7 @@ import java.util.Set;
 public class MainReactor implements Runnable {
 
     private static final String BREAKER_ID = "MAIN_POWER_BREAKER";
-    private static final Set<String> POWER_TYPES = Set.of("UPDATE_LINE_LOAD", "TOGGLE_LINE");
+    private static final Set<String> POWER_TYPES = Set.of("UPDATE_LINE_LOAD", "UPDATE_DEVICE_LOAD", "TOGGLE_LINE");
 
     private final EventPool eventPool;
     private final ConsequencePool consequencePool;
@@ -48,9 +48,17 @@ public class MainReactor implements Runnable {
             // removed: the extra "routing power event" println
         }
 
-        if (!gate.allow(routed, System.currentTimeMillis())) {
+        if ("LOAD_SHED".equals(event.getType())) {
+            long until = System.currentTimeMillis() + ShedPlanner.SHED_LOCK_MS;
+            for (String id : event.getMessage().split(",")) gate.shedLock(id.trim(), until);
+            System.out.println("[Shedding] locked against automation: " + event.getMessage());
+            return;   // bookkeeping only, not routed to a unit
+        }
+
+        String reason = gate.blockReason(routed, System.currentTimeMillis());
+        if (reason != null) {
             System.out.println("[Gate] blocked " + routed.getType() + " -> " + routed.getCompId()
-                    + " (" + routed.getPriority() + ")");
+                    + " (" + routed.getPriority() + "): " + reason);
             return;
         }
 

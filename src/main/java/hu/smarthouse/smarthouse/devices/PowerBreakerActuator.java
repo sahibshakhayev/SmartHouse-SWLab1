@@ -9,7 +9,8 @@ public class PowerBreakerActuator {
     private boolean mainBreakerOn = true;
 
     private final Map<String, Boolean> lines = new HashMap<>();
-    private final Map<String, Double> lineLoadsKw = new HashMap<>();
+    private final Map<String, Double> lineLoadsKw = new HashMap<>();                // legacy per-line value
+    private final Map<String, Map<String, Double>> deviceLoadsKw = new HashMap<>();  // line -> device -> kW
 
     public static final double MAX_CAPACITY_KW = 5.0;
 
@@ -42,14 +43,32 @@ public class PowerBreakerActuator {
                     lineLoadsKw.put(parts[0], Math.max(0.0, Double.parseDouble(parts[1])));
                 }
             }
+            case "UPDATE_DEVICE_LOAD" -> {              // payload: LINE:DEVICE:kW
+                String[] parts = payload.split(":");
+                if (parts.length == 3 && lines.containsKey(parts[0])) {
+                    deviceLoadsKw.computeIfAbsent(parts[0], k -> new HashMap<>())
+                            .put(parts[1], Math.max(0.0, Double.parseDouble(parts[2])));
+                }
+            }
         }
+    }
+
+    private double lineLoad(String line) {
+        double devices = deviceLoadsKw.getOrDefault(line, Map.of()).values()
+                .stream().mapToDouble(Double::doubleValue).sum();
+        return lineLoadsKw.getOrDefault(line, 0.0) + devices;
+    }
+
+    public synchronized void clearLine(String line) {
+        lineLoadsKw.put(line, 0.0);
+        deviceLoadsKw.remove(line);
     }
 
     public synchronized double getTotalPowerLoadKw() {
         if (!mainBreakerOn) return 0.0;
         return lines.entrySet().stream()
                 .filter(Map.Entry::getValue)
-                .mapToDouble(entry -> lineLoadsKw.getOrDefault(entry.getKey(), 0.0))
+                .mapToDouble(e -> lineLoad(e.getKey()))
                 .sum();
     }
 
@@ -59,5 +78,10 @@ public class PowerBreakerActuator {
 
     public synchronized boolean isMainBreakerOn() { return mainBreakerOn; }
     public synchronized Map<String, Boolean> getLines() { return new HashMap<>(lines); }
-    public synchronized Map<String, Double> getLineLoadsKw() { return new HashMap<>(lineLoadsKw); }
+
+    public synchronized Map<String, Double> getLineLoadsKw() {
+        Map<String, Double> result = new HashMap<>();
+        lines.keySet().forEach(line -> result.put(line, lineLoad(line)));
+        return result;
+    }
 }

@@ -135,6 +135,10 @@ public class DashboardController {
     @FXML
     private Label doorStatus;
 
+    // TV and Music
+    @FXML private Label tvStatusLabel;
+    @FXML private Label musicStatusLabel;
+
     // Settings Components
     @FXML
     private Slider fanDelaySlider;
@@ -214,6 +218,23 @@ public class DashboardController {
     }
 
     // --- User Interaction Events ---
+
+    @FXML private void onToggleTv()        { sendEvent(new Event("TOGGLE", "User toggled TV", "LIVING_ROOM_TV")); }
+    @FXML private void onTvChannelUp()     { sendEvent(new Event("CHANNEL_UP", "User changed channel", "LIVING_ROOM_TV")); }
+    @FXML private void onTvChannelDown()   { sendEvent(new Event("CHANNEL_DOWN", "User changed channel", "LIVING_ROOM_TV")); }
+    @FXML private void onTvVolumeUp()      { sendEvent(new Event("VOLUME_UP", "User raised TV volume", "LIVING_ROOM_TV")); }
+    @FXML private void onTvVolumeDown()    { sendEvent(new Event("VOLUME_DOWN", "User lowered TV volume", "LIVING_ROOM_TV")); }
+
+    @FXML private void onToggleMusic()     { sendEvent(new Event("TOGGLE", "User toggled music", "LIVING_ROOM_MUSIC")); }
+    @FXML private void onMusicNext()       { sendEvent(new Event("NEXT_TRACK", "User skipped track", "LIVING_ROOM_MUSIC")); }
+    @FXML private void onMusicPrev()       { sendEvent(new Event("PREV_TRACK", "User went back a track", "LIVING_ROOM_MUSIC")); }
+    @FXML private void onMusicVolumeUp()   { sendEvent(new Event("VOLUME_UP", "User raised music volume", "LIVING_ROOM_MUSIC")); }
+    @FXML private void onMusicVolumeDown() { sendEvent(new Event("VOLUME_DOWN", "User lowered music volume", "LIVING_ROOM_MUSIC")); }
+
+    // for testing line overload
+    @FXML private void onSimulateOverload() {
+        sendSensorInput(new Event("UPDATE_DEVICE_LOAD", "LIVING_ROOM_LINE:TEST_LOAD:3.0", "MAIN_POWER_BREAKER"));
+    }
 
     @FXML
     private void onShowBathroom() {
@@ -652,6 +673,16 @@ public class DashboardController {
             icon.setImage(isOn ? imgPlugOn : imgPlugOff);
             status.setText(isOn ? "ON | " + watts + " W" : "OFF | 0 W");
         });
+    }
+
+    public void updateTvStatus(boolean on, int channel, int volume) {
+        Platform.runLater(() ->
+                tvStatusLabel.setText(on ? "ON | Ch " + channel + " | Vol " + volume : "OFF"));
+    }
+
+    public void updateMusicStatus(boolean on, String track, int volume) {
+        Platform.runLater(() ->
+                musicStatusLabel.setText(on ? "ON | " + track + " | Vol " + volume : "OFF"));
     }
 
 }
