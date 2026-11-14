@@ -37,6 +37,8 @@ public class SmartHouseApp extends Application {
     private MotionSensor bathRoomMotionSensor;
     private BoilerReactor boilerReactor;
     private SceneReactor sceneReactor;
+    private TVReactor tvReactor;
+    private MusicSystemReactor musicReactor;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -77,6 +79,9 @@ public class SmartHouseApp extends Application {
         livingRoomLightReactor = new LightReactor("LIVING_ROOM_LIGHT", consequencePool, eventPool, controller);
         livingRoomWindowReactor = new WindowReactor("LIVING_ROOM_WINDOW", eventPool, consequencePool, controller);
         livingRoomDoorReactor = new DoorReactor("FRONT_DOOR", consequencePool, controller);
+        tvReactor = new TVReactor(consequencePool, eventPool, controller);
+        musicReactor = new MusicSystemReactor(consequencePool, eventPool, controller);
+        
         breakerReactor = new PowerBreakerReactor(eventPool, consequencePool, controller);
         sceneReactor = new SceneReactor(consequencePool, eventPool);
         threadPool = Executors.newFixedThreadPool(24);
@@ -95,6 +100,8 @@ public class SmartHouseApp extends Application {
         threadPool.execute(livingRoomWindowReactor);
         threadPool.execute(livingRoomDoorReactor);
         threadPool.execute(livingRoomLightReactor);
+        threadPool.execute(tvReactor);
+        threadPool.execute(musicReactor);
         threadPool.execute(sceneReactor);
 
         primaryStage.setTitle("Smart Bathroom Control");
@@ -119,6 +126,8 @@ public class SmartHouseApp extends Application {
         if (livingRoomDoorReactor != null) livingRoomDoorReactor.stop();
         if (breakerReactor != null) breakerReactor.stop();
         if (livingRoomLightReactor != null) livingRoomLightReactor.stop();
+        if (tvReactor != null) tvReactor.stop();
+        if (musicReactor != null) musicReactor.stop();
         if (sceneReactor != null) sceneReactor.stop();
         if (threadPool != null) threadPool.shutdownNow();
     }

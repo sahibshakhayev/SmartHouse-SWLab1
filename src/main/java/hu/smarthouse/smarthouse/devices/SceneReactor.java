@@ -26,6 +26,10 @@ public class SceneReactor extends BaseReactor {
 
         try {
             for (HouseScenes.Step s : steps) {
+                if ("PAUSE".equals(s.type())) {
+                    Thread.sleep(Long.parseLong(s.message()));
+                    continue;
+                }
                 // same tier as the request: a user-chosen scene overrides automation, never an emergency
                 eventPool.put(new Event(s.type(),
                         s.message().isEmpty() ? "Scene " + name : s.message(),

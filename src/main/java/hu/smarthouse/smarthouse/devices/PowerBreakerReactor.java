@@ -1,21 +1,35 @@
 package hu.smarthouse.smarthouse.devices;
 
-import hu.smarthouse.smarthouse.core.BaseReactor;
-import hu.smarthouse.smarthouse.core.ConsequencePool;
-import hu.smarthouse.smarthouse.core.EventPool;
+import hu.smarthouse.smarthouse.core.*;
 import hu.smarthouse.smarthouse.model.Event;
 import hu.smarthouse.smarthouse.ui.DashboardController;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class PowerBreakerReactor extends BaseReactor {
+
+    private static final String ID = "MAIN_POWER_BREAKER";
+    private static final List<String> LINES = List.of("KITCHEN_LINE", "BATHROOM_LINE", "LIVING_ROOM_LINE");
+    private static final long SETTLE_MS = 1500;   // time for devices to report their new load
+
     private final PowerBreakerActuator breaker;
     private final DashboardController controller;
     private final EventPool eventPool;
+    private final ScheduledExecutorService rechecker = Executors.newSingleThreadScheduledExecutor();
+
+    private final Map<String, Long> shedAt = new HashMap<>();   // only touched from react()
+    private long lastShedAt = 0;
 
     public PowerBreakerReactor(EventPool eventPool, ConsequencePool pool, DashboardController controller) {
-        super("MAIN_POWER_BREAKER", pool);
+        super(ID, pool);
         this.eventPool = eventPool;
         this.controller = controller;
-        this.breaker = new PowerBreakerActuator("MAIN_POWER_BREAKER");
+        this.breaker = new PowerBreakerActuator(ID);
     }
 
     @Override
@@ -24,85 +38,94 @@ public class PowerBreakerReactor extends BaseReactor {
             String type = event.getType();
             String payload = event.getMessage();
 
-            // 1. Process breaker state updates
             breaker.execute(event);
 
-            // 2. If line or main breaker was toggled OFF, force-cut all connected devices
             if ("TOGGLE_LINE".equals(type)) {
                 String[] parts = payload.split(":");
-                if (parts.length == 2 && !Boolean.parseBoolean(parts[1])) {
-                    cutPowerToLine(parts[0]);
+                if (parts.length == 2) {
+                    if (Boolean.parseBoolean(parts[1])) shedAt.remove(parts[0]);   // user restored this feeder
+                    else cutPowerToLine(parts[0]);
                 }
             } else if ("TOGGLE_MAIN".equals(type) && !Boolean.parseBoolean(payload)) {
-                cutPowerToLine("KITCHEN_LINE");
-                cutPowerToLine("BATHROOM_LINE");
-                cutPowerToLine("LIVING_ROOM_LINE");
+                LINES.forEach(this::cutPowerToLine);
             }
 
-            // 3. Interlock Guard: If a device sends load > 0 while its line is OFF, immediately reject it with TURN_OFF
-            if ("UPDATE_LINE_LOAD".equals(type)) {
-                String[] parts = payload.split(":");
-                if (parts.length == 2) {
-                    String lineName = parts[0];
-                    double load = Double.parseDouble(parts[1]);
-                    if (load > 0.0 && !breaker.isLineActive(lineName)) {
-                        System.out.println("[PowerBreaker Guard] Line " + lineName + " is OFF. Rejecting power request from " + event.getCompId());
-                        turnOffLineDevices(lineName);
-                    }
-                }
+            if ("UPDATE_LINE_LOAD".equals(type) || "UPDATE_DEVICE_LOAD".equals(type)) {
+                guardDeadLine(payload);
             }
 
-            // 4. Dynamic Load Shedding check (> 5.0 kW)
-            checkPowerOverload();
+            checkPowerOverload();   // also runs for LOAD_RECHECK
 
-            // 5. Update UI
             controller.updatePowerBreakerStatus(
                     breaker.isMainBreakerOn(),
                     breaker.getTotalPowerLoadKw(),
                     breaker.getLines(),
-                    breaker.getLineLoadsKw()
-            );
+                    breaker.getLineLoadsKw());
         } catch (Exception e) {
             System.out.println("[PowerBreakerReactor] Exception: " + e.getMessage());
         }
     }
 
+    /** A device reporting load on a dead line is switched off again. */
+    private void guardDeadLine(String payload) {
+        String[] p = payload.split(":");
+        if (p.length < 2) return;
+        String line = p[0];
+        double load = Double.parseDouble(p[p.length - 1]);
+        if (load > 0.0 && !breaker.isLineActive(line)) {
+            System.out.println("[PowerBreaker Guard] " + line + " is OFF. Rejecting power request.");
+            turnOffLineDevices(line);
+        }
+    }
+
     private void checkPowerOverload() {
-        double currentLoad = breaker.getTotalPowerLoadKw();
-        if (currentLoad > PowerBreakerActuator.MAX_CAPACITY_KW) {
-            System.out.printf("[POWER SHEDDING] Load %.2f kW > 5.0 kW limit! Dropping secondary line...%n", currentLoad);
+        double load = breaker.getTotalPowerLoadKw();
+        if (load <= PowerBreakerActuator.MAX_CAPACITY_KW) return;
 
-            // Priority order for shedding: Living Room -> Kitchen -> Bathroom
-            if (breaker.isLineActive("LIVING_ROOM_LINE")) {
-                shedLine("LIVING_ROOM_LINE");
-            } else if (breaker.isLineActive("KITCHEN_LINE")) {
-                shedLine("KITCHEN_LINE");
-            } else if (breaker.isLineActive("BATHROOM_LINE")) {
-                shedLine("BATHROOM_LINE");
-            }
+        long now = System.currentTimeMillis();
+        if (now - lastShedAt < SETTLE_MS) return;   // previous step still settling; a recheck is scheduled
+
+        List<String> step = ShedPlanner.nextStep(
+                id -> now - shedAt.getOrDefault(id, 0L) < ShedPlanner.SHED_LOCK_MS,
+                breaker::isLineActive);
+
+        if (step.isEmpty()) {
+            System.out.printf("[POWER SHEDDING] %.2f kW over the limit, nothing left to shed%n", load);
+            return;
         }
-    }
 
-    private void shedLine(String lineName) {
-        breaker.execute(new Event("TOGGLE_LINE", lineName + ":false", "MAIN_POWER_BREAKER"));
-        cutPowerToLine(lineName);
-        try {
-            eventPool.put(new Event("POWER_LINE_SHEDDED", lineName, "MAIN_POWER_BREAKER"));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        System.out.printf("[POWER SHEDDING] %.2f kW > %.1f kW. Shedding: %s%n",
+                load, PowerBreakerActuator.MAX_CAPACITY_KW, step);
+
+        lastShedAt = now;
+        step.forEach(id -> shedAt.put(id, now));
+
+        publish(new Event("LOAD_SHED", String.join(",", step), ID, Priority.EMERGENCY)); // lock first
+        for (String id : step) {
+            if (ShedPlanner.isFeeder(id)) shedLine(id);
+            else sendTurnOff(id);
         }
+        scheduleRecheck();
     }
 
-    private void cutPowerToLine(String lineName) {
-        breaker.execute(new Event("UPDATE_LINE_LOAD", lineName + ":0.0", "MAIN_POWER_BREAKER"));
-        turnOffLineDevices(lineName);
+    private void shedLine(String line) {
+        breaker.execute(new Event("TOGGLE_LINE", line + ":false", ID));
+        cutPowerToLine(line);
+        publish(new Event("POWER_LINE_SHEDDED", line, ID));
     }
 
-    private void turnOffLineDevices(String lineName) {
-        switch (lineName) {
+    private void cutPowerToLine(String line) {
+        breaker.clearLine(line);
+        turnOffLineDevices(line);
+    }
+
+    private void turnOffLineDevices(String line) {
+        switch (line) {
             case "LIVING_ROOM_LINE" -> {
                 sendTurnOff("LIVING_ROOM_LIGHT");
                 sendTurnOff("LIVING_ROOM_THERMOSTAT");
+                sendTurnOff("LIVING_ROOM_TV");
+                sendTurnOff("LIVING_ROOM_MUSIC");
             }
             case "KITCHEN_LINE" -> {
                 sendTurnOff("KITCHEN_LIGHT");
@@ -118,11 +141,27 @@ public class PowerBreakerReactor extends BaseReactor {
     }
 
     private void sendTurnOff(String targetId) {
+        // emergency tier: a manual hold must not be able to block a protective shutdown
+        publish(new Event("TURN_OFF", "Power shed / line dead", targetId, Priority.EMERGENCY));
+    }
+
+    private void scheduleRecheck() {
+        rechecker.schedule(() -> publish(new Event("LOAD_RECHECK", "post-shed check", ID)),
+                SETTLE_MS + 200, TimeUnit.MILLISECONDS);
+    }
+
+    private void publish(Event event) {
         try {
-            eventPool.put(new Event("TURN_OFF", "Power line dead", targetId));
+            eventPool.put(event);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
+        rechecker.shutdownNow();
     }
 
     public PowerBreakerActuator getActuator() { return breaker; }
