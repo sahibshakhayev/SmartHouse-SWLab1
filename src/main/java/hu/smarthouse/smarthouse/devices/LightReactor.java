@@ -27,7 +27,7 @@ public class LightReactor extends BaseReactor {
                     getComponentId().contains("BATHROOM") ? "BATHROOM_LINE" : "LIVING_ROOM_LINE";
 
             try {
-                eventPool.put(new Event("UPDATE_LINE_LOAD", lineName + ":" + load, "MAIN_POWER_BREAKER"));
+                eventPool.put(new Event("UPDATE_DEVICE_LOAD", lineName + ":" + getComponentId() + ":" + load, "MAIN_POWER_BREAKER"));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

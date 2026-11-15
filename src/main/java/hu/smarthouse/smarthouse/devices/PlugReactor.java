@@ -36,7 +36,7 @@ public class PlugReactor extends BaseReactor {
         double loadKw = plug.isOn() ? (plug.getPowerDraw() / 1000.0) : 0.0;
 
         try {
-            eventPool.put(new Event("UPDATE_LINE_LOAD", lineName + ":" + loadKw, "MAIN_POWER_BREAKER"));
+            eventPool.put(new Event("UPDATE_DEVICE_LOAD", lineName + ":" + getComponentId() + ":" + loadKw, "MAIN_POWER_BREAKER"));
             eventPool.put(new Event(Protocol.PLUG_STATUS,
                     Protocol.encode("state", plug.isOn() ? "ON" : "OFF",
                             "watts", String.valueOf(plug.getPowerDraw())),

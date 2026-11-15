@@ -51,7 +51,7 @@ public class BoilerReactor extends BaseReactor {
 
 
             double loadKw = boiler.getPowerDrawKw();
-            eventPool.put(new Event("UPDATE_LINE_LOAD", "BATHROOM_LINE:" + loadKw, "MAIN_POWER_BREAKER"));
+            eventPool.put(new Event("UPDATE_DEVICE_LOAD", "BATHROOM_LINE:BATHROOM_BOILER:" + loadKw, "MAIN_POWER_BREAKER"));
             updateUI();
 
         } catch (IllegalStateException | IllegalArgumentException e) {
