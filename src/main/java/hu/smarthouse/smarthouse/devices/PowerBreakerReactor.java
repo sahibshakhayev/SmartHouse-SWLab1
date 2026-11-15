@@ -73,7 +73,7 @@ public class PowerBreakerReactor extends BaseReactor {
         String line = p[0];
         double load = Double.parseDouble(p[p.length - 1]);
         if (load > 0.0 && !breaker.isLineActive(line)) {
-            System.out.println("[PowerBreaker Guard] " + line + " is OFF. Rejecting power request.");
+            publish(new Event("BREAKER_GUARD", line + " is OFF; cutting power to connected devices", "SYSTEM_MONITOR", Priority.EMERGENCY));
             turnOffLineDevices(line);
         }
     }
@@ -83,24 +83,28 @@ public class PowerBreakerReactor extends BaseReactor {
         if (load <= PowerBreakerActuator.MAX_CAPACITY_KW) return;
 
         long now = System.currentTimeMillis();
-        if (now - lastShedAt < SETTLE_MS) return;   // previous step still settling; a recheck is scheduled
+        if (now - lastShedAt < SETTLE_MS) return;
 
         List<String> step = ShedPlanner.nextStep(
                 id -> now - shedAt.getOrDefault(id, 0L) < ShedPlanner.SHED_LOCK_MS,
                 breaker::isLineActive);
 
         if (step.isEmpty()) {
-            System.out.printf("[POWER SHEDDING] %.2f kW over the limit, nothing left to shed%n", load);
+            publish(new Event("POWER_SHEDDING",
+                    String.format("%.2f kW > %.1f kW limit, nothing left to shed", load, PowerBreakerActuator.MAX_CAPACITY_KW),
+                    "SYSTEM_MONITOR", Priority.EMERGENCY));
             return;
         }
 
-        System.out.printf("[POWER SHEDDING] %.2f kW > %.1f kW. Shedding: %s%n",
+        String summary = String.format("%.2f kW > %.1f kW limit -> shedding %s",
                 load, PowerBreakerActuator.MAX_CAPACITY_KW, step);
+        System.out.println("[POWER SHEDDING] " + summary);
+        publish(new Event("POWER_SHEDDING", summary, "SYSTEM_MONITOR", Priority.EMERGENCY));
 
         lastShedAt = now;
         step.forEach(id -> shedAt.put(id, now));
+        publish(new Event("LOAD_SHED", String.join(",", step), ID, Priority.EMERGENCY));
 
-        publish(new Event("LOAD_SHED", String.join(",", step), ID, Priority.EMERGENCY)); // lock first
         for (String id : step) {
             if (ShedPlanner.isFeeder(id)) shedLine(id);
             else sendTurnOff(id);

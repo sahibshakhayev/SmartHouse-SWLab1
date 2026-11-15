@@ -58,7 +58,7 @@ public class SmartHouseApp extends Application {
         controller.setEventPool(eventPool);
 
 
-        mainReactor = new MainReactor(eventPool, consequencePool);
+        mainReactor = new MainReactor(eventPool, consequencePool, monitorFeed);
         systemMonitor = new Monitor(monitorFeed, controller.getLogArea());
 // Обновите старый вызов:
         bathRoomlightReactor = new LightReactor("BATHROOM_LIGHT", consequencePool, eventPool, controller);
