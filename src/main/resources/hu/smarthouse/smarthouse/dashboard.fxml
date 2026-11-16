@@ -43,7 +43,12 @@
                     <Button onAction="#onSceneEco" text="Eco" />
 <!--                    <Button onAction="#onSimulateOverload" text="onSimulateOverload" />-->
                 </HBox>
-
+                <Label fx:id="powerErrorLabel"
+                       visible="false"
+                       managed="false"
+                       wrapText="true"
+                       maxWidth="Infinity"
+                       style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 12px; -fx-padding: 8 12 8 12; -fx-background-radius: 6;" />
                 <Label fx:id="pageTitle" text="Bathroom Dashboard">
                     <font>
                         <Font name="System Bold" size="24.0"/>

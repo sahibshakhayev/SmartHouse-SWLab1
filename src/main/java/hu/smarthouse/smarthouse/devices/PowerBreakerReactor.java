@@ -4,26 +4,15 @@ import hu.smarthouse.smarthouse.core.*;
 import hu.smarthouse.smarthouse.model.Event;
 import hu.smarthouse.smarthouse.ui.DashboardController;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class PowerBreakerReactor extends BaseReactor {
-
     private static final String ID = "MAIN_POWER_BREAKER";
     private static final List<String> LINES = List.of("KITCHEN_LINE", "BATHROOM_LINE", "LIVING_ROOM_LINE");
-    private static final long SETTLE_MS = 1500;   // time for devices to report their new load
 
     private final PowerBreakerActuator breaker;
     private final DashboardController controller;
     private final EventPool eventPool;
-    private final ScheduledExecutorService rechecker = Executors.newSingleThreadScheduledExecutor();
-
-    private final Map<String, Long> shedAt = new HashMap<>();   // only touched from react()
-    private long lastShedAt = 0;
 
     public PowerBreakerReactor(EventPool eventPool, ConsequencePool pool, DashboardController controller) {
         super(ID, pool);
@@ -38,84 +27,82 @@ public class PowerBreakerReactor extends BaseReactor {
             String type = event.getType();
             String payload = event.getMessage();
 
-            breaker.execute(event);
+            if ("UPDATE_DEVICE_LOAD".equals(type)) {
+                handleDeviceLoadRequest(payload);
+            } else {
+                breaker.execute(event);
 
-            if ("TOGGLE_LINE".equals(type)) {
-                String[] parts = payload.split(":");
-                if (parts.length == 2) {
-                    if (Boolean.parseBoolean(parts[1])) shedAt.remove(parts[0]);   // user restored this feeder
-                    else cutPowerToLine(parts[0]);
+                if ("TOGGLE_LINE".equals(type)) {
+                    String[] parts = payload.split(":");
+                    if (parts.length == 2 && !Boolean.parseBoolean(parts[1])) {
+                        cutPowerToLine(parts[0]);
+                    }
+                } else if ("TOGGLE_MAIN".equals(type) && !Boolean.parseBoolean(payload)) {
+                    LINES.forEach(this::cutPowerToLine);
                 }
-            } else if ("TOGGLE_MAIN".equals(type) && !Boolean.parseBoolean(payload)) {
-                LINES.forEach(this::cutPowerToLine);
             }
-
-            if ("UPDATE_LINE_LOAD".equals(type) || "UPDATE_DEVICE_LOAD".equals(type)) {
-                guardDeadLine(payload);
-            }
-
-            checkPowerOverload();   // also runs for LOAD_RECHECK
 
             controller.updatePowerBreakerStatus(
                     breaker.isMainBreakerOn(),
                     breaker.getTotalPowerLoadKw(),
                     breaker.getLines(),
-                    breaker.getLineLoadsKw());
+                    breaker.getLineLoadsKw()
+            );
         } catch (Exception e) {
             System.out.println("[PowerBreakerReactor] Exception: " + e.getMessage());
         }
     }
 
-    /** A device reporting load on a dead line is switched off again. */
-    private void guardDeadLine(String payload) {
-        String[] p = payload.split(":");
-        if (p.length < 2) return;
-        String line = p[0];
-        double load = Double.parseDouble(p[p.length - 1]);
-        if (load > 0.0 && !breaker.isLineActive(line)) {
-            publish(new Event("BREAKER_GUARD", line + " is OFF; cutting power to connected devices", "SYSTEM_MONITOR", Priority.EMERGENCY));
-            turnOffLineDevices(line);
-        }
-    }
+    private void handleDeviceLoadRequest(String payload) {
+        String[] parts = payload.split(":");
+        if (parts.length != 3) return;
 
-    private void checkPowerOverload() {
-        double load = breaker.getTotalPowerLoadKw();
-        if (load <= PowerBreakerActuator.MAX_CAPACITY_KW) return;
+        String line = parts[0];
+        String deviceId = parts[1];
+        double requestedKw = Math.max(0.0, Double.parseDouble(parts[2]));
 
-        long now = System.currentTimeMillis();
-        if (now - lastShedAt < SETTLE_MS) return;
-
-        List<String> step = ShedPlanner.nextStep(
-                id -> now - shedAt.getOrDefault(id, 0L) < ShedPlanner.SHED_LOCK_MS,
-                breaker::isLineActive);
-
-        if (step.isEmpty()) {
-            publish(new Event("POWER_SHEDDING",
-                    String.format("%.2f kW > %.1f kW limit, nothing left to shed", load, PowerBreakerActuator.MAX_CAPACITY_KW),
-                    "SYSTEM_MONITOR", Priority.EMERGENCY));
+        // Turning OFF (0.0 kW) is always allowed
+        if (requestedKw == 0.0) {
+            breaker.execute(new Event("UPDATE_DEVICE_LOAD", payload, ID));
             return;
         }
 
-        String summary = String.format("%.2f kW > %.1f kW limit -> shedding %s",
-                load, PowerBreakerActuator.MAX_CAPACITY_KW, step);
-        System.out.println("[POWER SHEDDING] " + summary);
-        publish(new Event("POWER_SHEDDING", summary, "SYSTEM_MONITOR", Priority.EMERGENCY));
-
-        lastShedAt = now;
-        step.forEach(id -> shedAt.put(id, now));
-        publish(new Event("LOAD_SHED", String.join(",", step), ID, Priority.EMERGENCY));
-
-        for (String id : step) {
-            if (ShedPlanner.isFeeder(id)) shedLine(id);
-            else sendTurnOff(id);
+        // Check 1: Is the feeder line energized?
+        if (!breaker.isLineEnergized(line)) {
+            String errorMsg = !breaker.isMainBreakerOn()
+                    ? "Cannot power on " + deviceId + ": MAIN BREAKER is OFF."
+                    : "Cannot power on " + deviceId + ": " + line + " is OFF.";
+            rejectDevicePowerOn(deviceId, errorMsg);
+            return;
         }
-        scheduleRecheck();
+
+        // Check 2: Is there enough remaining capacity within the 5.00 kW limit?
+        double previousKw = breaker.getDeviceLoadKw(line, deviceId);
+        double availableForDevice = breaker.getRemainingCapacityKw() + previousKw;
+
+        if (requestedKw > availableForDevice + 1e-6) {
+            String errorMsg = String.format(
+                    "Insufficient power capacity for %s (needs %.2f kW, only %.2f kW remaining of %.2f kW).",
+                    deviceId, requestedKw, availableForDevice, PowerBreakerActuator.MAX_CAPACITY_KW);
+            rejectDevicePowerOn(deviceId, errorMsg);
+            return;
+        }
+
+        // Admitted: commit load to breaker
+        breaker.execute(new Event("UPDATE_DEVICE_LOAD", payload, ID));
     }
 
-    private void shedLine(String line) {
-        breaker.execute(new Event("TOGGLE_LINE", line + ":false", ID));
-        cutPowerToLine(line);
-        publish(new Event("POWER_LINE_SHEDDED", line, ID));
+    private void rejectDevicePowerOn(String deviceId, String errorMsg) {
+        System.err.println("[PowerBreaker REJECTED] " + errorMsg);
+
+        // 1. Force the device back OFF (EMERGENCY priority bypasses 30s manual hold)
+        publish(new Event("TURN_OFF", "Rejected: insufficient power capacity", deviceId, Priority.EMERGENCY));
+
+        // 2. Record in System Monitor Log
+        publish(new Event("CAPACITY_EXCEEDED", errorMsg, "SYSTEM_MONITOR", Priority.EMERGENCY));
+
+        // 3. Display visible error banner in GUI
+        controller.showPowerError(errorMsg);
     }
 
     private void cutPowerToLine(String line) {
@@ -137,21 +124,15 @@ public class PowerBreakerReactor extends BaseReactor {
             }
             case "BATHROOM_LINE" -> {
                 sendTurnOff("BATHROOM_LIGHT");
-                sendTurnOff("BATHROOM_BOILER");
-                sendTurnOff("BATHROOM_PLUG");
                 sendTurnOff("BATHROOM_FAN");
+                sendTurnOff("BATHROOM_PLUG");
+                sendTurnOff("BATHROOM_BOILER");
             }
         }
     }
 
     private void sendTurnOff(String targetId) {
-        // emergency tier: a manual hold must not be able to block a protective shutdown
-        publish(new Event("TURN_OFF", "Power shed / line dead", targetId, Priority.EMERGENCY));
-    }
-
-    private void scheduleRecheck() {
-        rechecker.schedule(() -> publish(new Event("LOAD_RECHECK", "post-shed check", ID)),
-                SETTLE_MS + 200, TimeUnit.MILLISECONDS);
+        publish(new Event("TURN_OFF", "Power line dead", targetId, Priority.EMERGENCY));
     }
 
     private void publish(Event event) {
@@ -162,11 +143,7 @@ public class PowerBreakerReactor extends BaseReactor {
         }
     }
 
-    @Override
-    public void stop() {
-        super.stop();
-        rechecker.shutdownNow();
+    public PowerBreakerActuator getActuator() {
+        return breaker;
     }
-
-    public PowerBreakerActuator getActuator() { return breaker; }
 }

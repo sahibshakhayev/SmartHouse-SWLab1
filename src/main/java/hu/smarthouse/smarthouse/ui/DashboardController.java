@@ -218,7 +218,8 @@ public class DashboardController {
     }
 
     // --- User Interaction Events ---
-
+    @FXML private Label powerErrorLabel;
+    private javafx.animation.PauseTransition errorHideTimer;
     @FXML private void onToggleTv()        { sendEvent(new Event("TOGGLE", "User toggled TV", "LIVING_ROOM_TV")); }
     @FXML private void onTvChannelUp()     { sendEvent(new Event("CHANNEL_UP", "User changed channel", "LIVING_ROOM_TV")); }
     @FXML private void onTvChannelDown()   { sendEvent(new Event("CHANNEL_DOWN", "User changed channel", "LIVING_ROOM_TV")); }
@@ -298,6 +299,12 @@ public class DashboardController {
         kitchenNavButton.setStyle(isKitch ? NAV_ACTIVE : NAV_INACTIVE);
         corridorNavButton.setStyle(isCorridor ? NAV_ACTIVE : NAV_INACTIVE);
     }
+
+
+
+
+
+
 
     @FXML
     private void onToggleLight() {
@@ -528,6 +535,27 @@ public class DashboardController {
             }
         });
     }
+
+    public void showPowerError(String message) {
+        Platform.runLater(() -> {
+            if (powerErrorLabel == null) return;
+            powerErrorLabel.setText("⚠ " + message);
+            powerErrorLabel.setVisible(true);
+            powerErrorLabel.setManaged(true);
+
+            if (errorHideTimer != null) {
+                errorHideTimer.stop();
+            }
+            errorHideTimer = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(5));
+            errorHideTimer.setOnFinished(e -> {
+                powerErrorLabel.setVisible(false);
+                powerErrorLabel.setManaged(false);
+            });
+            errorHideTimer.play();
+        });
+    }
+
+
 
     // --- Window ---
 
