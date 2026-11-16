@@ -104,7 +104,7 @@ public class SmartHouseApp extends Application {
         threadPool.execute(musicReactor);
         threadPool.execute(sceneReactor);
 
-        primaryStage.setTitle("Smart Bathroom Control");
+        primaryStage.setTitle("Smart House Control");
         primaryStage.setScene(new Scene(root, 950, 650));
         primaryStage.show();
     }

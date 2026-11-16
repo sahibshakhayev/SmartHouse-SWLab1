@@ -41,7 +41,7 @@ public class BoilerReactor extends BaseReactor {
             if ("WATER_VALVE_CLOSED".equals(type)) {
                 boiler.execute(event);
                 System.out.println("[Boiler WARNING] Water supply shut off! Dry-run protection triggered.");
-                eventPool.put(new Event("UPDATE_LINE_LOAD", "BATHROOM_LINE:0.0", "MAIN_POWER_BREAKER"));
+                eventPool.put(new Event("UPDATE_DEVICE_LOAD", "BATHROOM_LINE:0.0", "MAIN_POWER_BREAKER"));
                 updateUI();
                 return;
             }

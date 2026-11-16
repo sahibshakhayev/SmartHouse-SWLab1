@@ -71,6 +71,9 @@ public final class HouseScenes {
                     boiler("OFF")),
 
             "ECO", List.of(
+                    line("KITCHEN_LINE", true),
+                    line("BATHROOM_LINE", true),
+                    line("LIVING_ROOM_LINE", true),
                     off("KITCHEN_PLUG"),
                     off("BATHROOM_PLUG"),
                     tv("TURN_OFF", ""),
