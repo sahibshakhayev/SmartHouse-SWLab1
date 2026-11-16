@@ -60,6 +60,8 @@ public final class HouseScenes {
                     off("BATHROOM_LIGHT"),
                     off("KITCHEN_LIGHT"),
                     off("LIVING_ROOM_LIGHT"),
+                    off("KITCHEN_PLUG"),
+                    off("BATHROOM_PLUG"),
                     tv("TURN_OFF", ""),
                     music("TURN_ON", ""),
                     music("TRACK_SET", "4"),      // Sleep Waves
@@ -68,18 +70,25 @@ public final class HouseScenes {
                     new Step("LIVING_ROOM_WINDOW", "SHADE_DOWN", ""),
                     new Step("FRONT_DOOR", "CLOSE", ""),
                     new Step("FRONT_DOOR", "LOCK", ""),
+                    new Step("LIVING_ROOM_THERMOSTAT", "MODE_OFF", ""),
                     boiler("OFF")),
 
             "ECO", List.of(
                     line("KITCHEN_LINE", true),
                     line("BATHROOM_LINE", true),
                     line("LIVING_ROOM_LINE", true),
+                    pause(400),
+                    off("BATHROOM_LIGHT"),
+                    off("KITCHEN_LIGHT"),
+                    off("LIVING_ROOM_LIGHT"),
                     off("KITCHEN_PLUG"),
                     off("BATHROOM_PLUG"),
+                    off("BATHROOM_FAN"),
                     tv("TURN_OFF", ""),
                     music("TURN_OFF", ""),
                     new Step("LIVING_ROOM_WINDOW", "SHADE_UP", ""),
                     new Step("LIVING_ROOM_THERMOSTAT", "MODE_OFF", ""),
+                    pause(200),
                     boiler("ECO"))
     );
 
