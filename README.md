@@ -1,6 +1,6 @@
 # Centralized, Event-Driven Smart House Prototype
 
-A multi-threaded smart-home simulation and control center built in **Java 25+** and **JavaFX** for **Software Lab 1** at **Eötvös Loránd University (ELTE), Faculty of Informatics**.
+A multi-threaded smart-home simulation and control center built in **Java 21+** and **JavaFX** for **Software Lab 1** at **Eötvös Loránd University (ELTE), Faculty of Informatics**.
 
 The system coordinates **9 smart devices across 4 rooms** alongside shared electrical and water infrastructure using a centralized producer–consumer **Reactor architecture**, deterministic **4-tier priority routing**, **hardware-style safety interlocks**, and **pre-admission electrical capacity protection**.
 
@@ -53,7 +53,7 @@ Rather than allowing sensors and appliances to call one another directly—which
 
 ## Prerequisites & Local Setup
 
-1. **Java Development Kit (JDK) 25 or higher** (configured with Java Platform Module System support).
+1. **Java Development Kit (JDK) 21 or higher** (configured with Java Platform Module System support).
 2. **Maven Wrapper** (bundled in the repository—no separate Maven installation required):
     * Windows: `.\mvnw.cmd`
     * Linux / macOS: `./mvnw`
